@@ -1,0 +1,29 @@
+$Id$
+
+Akamai is a registered trademark of Akamai Technologies, Inc.
+
+======================================================
+INSTALLATION
+======================================================
+1. Unpack the akamai folder and contents in the appropriate modules directory 
+   of your Drupal installation.  Normally sites/all/modules/
+   
+2. Enable the akamai module on the Modules admin page (admin/build/modules)
+
+3. You will also need a license to use Akamai's network, http://www.akamai.com/index.html.
+
+======================================================
+USAGE
+======================================================
+The module allows two forms of interaction for clearing the cache.
+1. Block form :
+  Enable this on the admin/build/block section of the admin UI and 
+  put the block where you want.  This form will clear the path that is 
+  listed above the button, (likely the page you are currently viewing).
+  
+2. Refresh Tool tab:
+  The Refresh Tool tab is found at, admin/settings/akamai/refresh.  It is 
+  part of the admin interface for this module.  From here you can list
+  several paths to be cleared.
+
+The Akamai module also offers integration with Context through the Context_http_header module.
