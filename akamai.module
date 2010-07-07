@@ -82,10 +82,11 @@ function akamai_nodeapi(&$node, $op) {
     case 'update':
     case 'delete':
       $url = base_path() . "node/{$node->nid}";
-      akamai_clear_url($url);
+      akamai_clear_url($url, array(), $node);
       break;
   }
 }
+
 
 /**
  * Implementation of hook_block().
@@ -134,6 +135,8 @@ function akamai_page_cache_control_form() {
     '#type'  => 'submit',
     '#value' => t('Refresh Akamai Cache'),
   );
+  
+  $form['#node'] = node_load(array('nid'=>$nid));
 
   return $form;
 }
@@ -144,10 +147,10 @@ function akamai_page_cache_control_form() {
  * Purge the 'path' variable from the Akamai cache.
  *
  */
-function akamai_page_cache_control_form_submit($form, &$form_state) {
+function akamai_page_cache_control_form_submit($form, &$form_state) {  
   $values = $form_state['values'];
   $path = $values['path'];
-  $did_clear = akamai_clear_url($path);
+  $did_clear = akamai_clear_url($path, array(), $form['#node']);
   if ($did_clear) {
     $message = t("Akamai Cache Request has been made successfully, please allow 10 minutes for changes to take effect.");
     drupal_set_message($message);
@@ -167,14 +170,15 @@ function akamai_page_cache_control_form_submit($form, &$form_state) {
  * @return
  *    TRUE if it was successfully cleared, FALSE otherwise.
  */
-function akamai_clear_url($paths_in, $params=array()) {
+function akamai_clear_url($paths_in, $params=array(), $node=NULL) {
   if (!is_array($paths_in)) {
     $paths_in = array($paths_in);
   }
   // Get the system path and all aliases to this url
   $paths=array();
+    
   foreach ($paths_in as $path) {
-    $paths = array_merge($paths, _akamai_get_all_paths($path));
+    $paths = array_merge($paths, _akamai_get_all_paths($path, $node));
     
   }
   $paths = array_unique($paths);
@@ -193,10 +197,12 @@ function akamai_clear_url($paths_in, $params=array()) {
  *
  * @param $url
  *    The URL to find all aliases
+ * @param $node
+ *    The Node for the URL being cleared if one exists, NULL otherwise
  * @return
  *    An array of all paths aliased to the provided URL.
  */
-function _akamai_get_all_paths($url) {
+function _akamai_get_all_paths($url, $node = NULL) {
   global $language;
 
   // If it is not a node path, get the system path
@@ -206,12 +212,19 @@ function _akamai_get_all_paths($url) {
   if (!isset($src)  || !$src) {
     $src = $url;
   }
+  $src = preg_replace("/^\//", "", $src);
   $paths[] = $src;
+  
   $result = db_query("SELECT dst FROM {url_alias} WHERE src = '%s' AND language IN('%s', '')", $src, $language->language);
+  
   while ($alias = db_result($result)) {
     $paths[] = $alias;
   }
-  return $paths;
+
+  // Allow other modules to add/modify paths to be cleared  
+  drupal_alter('akamai_paths', $paths, $node);
+
+  return $paths;  
 }
 
 /**
