@@ -47,7 +47,7 @@ function akamai_menu() {
 
   $items['admin/settings/akamai/refresh'] = array(
     'title'              => 'Refresh Tool',
-    'description'        => 'Helper to flush akamai cache from Drupal',
+    'description'        => 'Helper to flush Akamai cache from Drupal',
     'page callback'      => 'drupal_get_form',
     'page arguments'     => array('akamai_cache_control'),
     'file'               => 'akamai.admin.inc',
@@ -63,9 +63,9 @@ function akamai_menu() {
  */
 function akamai_theme() {
   return array(
-    'akamai_page_cache_control_form' => array(
+    'akamai_page_cache_control_block' => array(
       'arguments' => array('cache_control_form' => NULL),
-      'template' => 'akamai-page-cache-control-form',
+      'template' => 'akamai-page-cache-control-block',
     ),
   );
 }
@@ -89,23 +89,22 @@ function akamai_nodeapi(&$node, $op) {
 
 /**
  * Implementation of hook_block().
- *
- *
  */
 function akamai_block($op = 'list', $delta = 0, $edit = array()) {
   if ($op == 'list') {
     $blocks[0] = array(
       'info' => t('Akamai Cache Control'),
+      'region' => 'footer',
       'weight' => 0,
-      'status' => 1,
+      'cache'  => BLOCK_NO_CACHE,
     );
     return $blocks;
   }
   else if ( $op == 'view') {
-    $cache_control_form = akamai_page_cache_control_form();
+    $cache_control_form = drupal_get_form('akamai_page_cache_control_form');
     $block = array(
       'subject' => t('Akamai Cache Control'),
-      'content' => $content = theme('akamai_page_cache_control_form', $cache_control_form),
+      'content' => $content = theme('akamai_page_cache_control_block', $cache_control_form),
     );
     
     return $block;

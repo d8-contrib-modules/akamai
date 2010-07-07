@@ -7,5 +7,5 @@
  */
 ?>
 <div id="akamai-cache-control-block">
-<?php print drupal_render($cache_control_form); ?>
+  <?php print $cache_control_form; ?>
 </div>
