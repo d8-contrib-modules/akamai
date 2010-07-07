@@ -29,6 +29,7 @@ class AkamaiCacheControl {
       'type'      => "arl",
       'domain'    => variable_get("AkamaiCC_domain", ""),               
       'soap_wsdl' => variable_get("AkamaiCC_soap_wsdl", ""),
+      'email'     => variable_get("AkamaiCC_email", ""),
     );
                                                                               
     $this->parameters = array_merge($this->defaults, $options);
@@ -67,6 +68,10 @@ class AkamaiCacheControl {
       "type=$type",
     );
     
+    if (!empty($email) && $email != AKAMAI_EMAIL_DISABLE) {
+      $opt[] = "email-notification=$email";
+    }
+    
     // create soap object
     try {
       $ccuapi = new SoapClient($soap_wsdl,
@@ -77,15 +82,15 @@ class AkamaiCacheControl {
       );
       
       // call web service
-      $responce = $ccuapi->purgeRequest($name, $pwd, $network, $opt, $uris);
-      $is_success = ($responce->resultCode < 300);
-      $message = $responce->resultCode .": ". $responce->resultMsg;
+      $response = $ccuapi->purgeRequest($name, $pwd, $network, $opt, $uris);
+      $is_success = ($response->resultCode < 300);
+      $message = $response->resultCode .": ". $response->resultMsg;
       if (!$is_success) {
         throw new Exception($message);
       }
       foreach ($uris as $uri) {
-        watchdog('Akamai', t("Akamai %action of %uri"), 
-          array('%uri' => $uri, '%action' => $action), WATCHDOG_NOTICE);
+        watchdog('Akamai', t("Akamai %action of %uri: %message"), 
+          array('%uri' => $uri, '%action' => $action, '%message' => $message), WATCHDOG_NOTICE);
       }
     }
     catch (Exception $e) {

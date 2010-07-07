@@ -7,6 +7,8 @@
  *    Akamai is a registered trademark of Akamai Technologies, Inc.
  */
 
+define(AKAMAI_EMAIL_DISABLE, '#disable#');
+
 /**
  * Implementation of hook_init().
  */
@@ -82,7 +84,7 @@ function akamai_nodeapi(&$node, $op) {
     case 'update':
     case 'delete':
       $url = base_path() . "node/{$node->nid}";
-      akamai_clear_url($url, array(), $node);
+      akamai_clear_url($url, array('email' => AKAMAI_EMAIL_DISABLE), $node);
       break;
   }
 }
@@ -170,19 +172,24 @@ function akamai_page_cache_control_form_submit($form, &$form_state) {
  * @return
  *    TRUE if it was successfully cleared, FALSE otherwise.
  */
-function akamai_clear_url($paths_in, $params=array(), $node=NULL) {
+function akamai_clear_url($paths_in, $params = array(), $node = NULL) {
   if (!is_array($paths_in)) {
     $paths_in = array($paths_in);
   }
   // Get the system path and all aliases to this url
-  $paths=array();
+  $paths = array();
     
   foreach ($paths_in as $path) {
     $paths = array_merge($paths, _akamai_get_all_paths($path, $node));
-    
   }
   $paths = array_unique($paths);
-  try {
+  
+  // Setup the notification email if an email address is not provided
+  if ( !array_key_exists('email', $params) || empty($params['email'])) {
+    $params['email'] = akamai_get_notification_email();
+  }
+  
+  try {  
     $akamai = new AkamaiCacheControl($params);
     $akamai->clear_url($paths);
     return TRUE;
@@ -225,6 +232,18 @@ function _akamai_get_all_paths($url, $node = NULL) {
   drupal_alter('akamai_paths', $paths, $node);
 
   return $paths;  
+}
+
+/**
+ * Get the email address for notification.
+ */
+function akamai_get_notification_email() {
+  $notification = variable_get('AkamaiCC_email', '');
+  if (empty($notification)) {
+    global $user;
+    $notification = $user->mail;
+  }
+  return $notification;
 }
 
 /**

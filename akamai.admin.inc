@@ -62,6 +62,12 @@ function akamai_settings() {
     ),
     '#description'   => t('The default clearing action.  The options are <em>remove</em> (which removes the item from the Akamai cache) and <em>invalidate</em> (which leaves the item in the cache, but invalidates it so that the origin will be hit on the next request)')
   );
+  $form['AkamaiCC_email'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Email Notification Override'),
+    '#default_value' => variable_get('AkamaiCC_email', ''),
+    '#description'   => t('If this email address is specified all cache clearing requests will send notifications to this address.  If this address is not specified, the email address of the user executing the request will be used.')
+  );
   return system_settings_form($form);
 
 }
@@ -99,6 +105,13 @@ function akamai_cache_control() {
     '#description' => t('<b>Remove:</b> Purge the content from Akamai edge server caches. The next time the edge server receives a request for the content, it will retrieve the current version from the origin server. If it cannot retrieve a current version, it will follow instructions in your edge server configuration.<br/><br/><b>Invalidate:</b> Mark the cached content as invalid. The next time the Akamai edge server receives a request for the content, it will send an HTTP conditional get (If-Modified-Since) request to the origin. If the content has changed, the origin server will return a full fresh copy; otherwise, the origin normally will respond that the content has not changed, and Akamai can serve the already-cached content.<br/><br/><b>Note that <em>Remove</em> can increase the load on the origin more than <em>Invalidate</em>.</b> With <em>Invalidate</em>, objects are not removed from cache and full objects are not retrieved from the origin unless they are newer than the cached versions.'),
   );
   
+  $default_email = akamai_get_notification_email();
+  $form['email'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Email Notification'),
+    '#default_value' => $default_email,
+    '#description'   => t('Email address to be used for cache clear notifications. Note that it can take up to 10 minutes or more to receive a notification.')
+  );
   $form['submit'] = array(
     '#type'  => 'submit',
     '#value' => t('Start Refreshing Content'),
@@ -120,6 +133,7 @@ function akamai_cache_control_submit($form, &$form_state) {
   $overrides = array(
     'action' => $form_state['values']['refresh'],
     'domain' => $form_state['values']['domain_override'],
+    'email'  => $form_state['values']['email'],
   );
   
   $did_clear = akamai_clear_url($paths, $overrides);
