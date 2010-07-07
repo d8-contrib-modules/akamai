@@ -26,4 +26,18 @@ The module allows two forms of interaction for clearing the cache.
   part of the admin interface for this module.  From here you can list
   several paths to be cleared.
 
-The Akamai module also offers integration with Context through the Context_http_header module.
+The Akamai module also offers integration with Context through the context_http_header module.
+
+======================================================
+HOOKS
+======================================================
+Occasionally when one path is cleared, others will need to be cleared 
+as well. To enable this, we have an alter hook you can implement.
+
+function HOOK_akamai_paths_alter(&$paths, $node)
+
+ * $paths An array of URL paths to be submitted to Akamai for clearing, this
+          array can be modified.
+ * $node If this is a node page you are viewing, this will be that node, otherwise
+         it will be NULL.
+
