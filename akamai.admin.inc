@@ -114,7 +114,7 @@ function akamai_cache_control() {
  * Process the settings and submit to Akamai
  */
 function akamai_cache_control_submit($form, &$form_state) {
-  $paths = split("\n", $form_state['values']['paths']);
+  $paths = split("\n", filter_xss($form_state['values']['paths']));
   $action = $form_state['values']['refresh'];
   
   $overrides = array(
