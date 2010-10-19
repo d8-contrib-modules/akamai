@@ -7,7 +7,7 @@
  *    Akamai is a registered trademark of Akamai Technologies, Inc.
  */
 
-define(AKAMAI_EMAIL_DISABLE, '#disable#');
+define("AKAMAI_EMAIL_DISABLE", '#disable#');
 
 /**
  * Implementation of hook_init().
