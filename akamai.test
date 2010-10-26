@@ -1,0 +1,58 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Akamai tests.
+ */
+
+/**
+ * Test basic API.
+ */
+class AkamaiTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Akamai Tests',
+      'description' => 'Test various Akamai cache clearing integration.',
+      'group' => 'Akamai',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('akamai');
+    $user = $this->drupalCreateUser(array('purge akamai cache'));
+    $this->drupalLogin($user);
+    variable_set('akamai_service_class', 'RecordingCacheControlClient');
+  }
+
+  /**
+   * Tests clear.
+   */
+  function testDirectClear() {
+    $node = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
+    $canonical = "node/{$node->nid}";
+    
+    $akamai = akamai_get_class();
+    $akamai->clear_url($canonical);
+    
+    $paths = $akamai->paths;
+    $this->assertEqual(1, count($paths), "Only one path cleared");
+    $this->assertEqual($canonical, $paths[0]);
+  }
+
+  /**
+   * Tests clear.
+   */
+  function testSimpleClear() {
+    $node = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
+    $canonical = "node/{$node->nid}";
+    $response = akamai_clear_url($canonical, array(), $node);
+    $paths = $response['client']->paths;
+    
+    $this->assertEqual(1, count($paths), "Only one path cleared");
+    $this->assertEqual($canonical, $paths[0], "Correct path was cleared");
+  }
+}
+
+

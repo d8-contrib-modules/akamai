@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * Update hook for upgrading to Drupal 7.
+ */
+function akamai_update_7000() {
+  db_update('variable')->fields(array('name' => 'akamai_basepath'))->condition('name', 'AkamaiCC_basepath')->execute();
+  db_update('variable')->fields(array('name' => 'akamai_username'))->condition('name', 'AkamaiCC_name')->execute();
+  db_update('variable')->fields(array('name' => 'akamai_password'))->condition('name', 'AkamaiCC_pwd')->execute();
+  db_update('variable')->fields(array('name' => 'akamai_action'))->condition('name', 'AkamaiCC_action')->execute();
+  db_update('variable')->fields(array('name' => 'akamai_domain'))->condition('name', 'AkamaiCC_domain')->execute();
+  db_update('variable')->fields(array('name' => 'akamai_wsdl'))->condition('name', 'AkamaiCC_soap_wsdl')->execute();
+  db_update('variable')->fields(array('name' => 'akamai_email'))->condition('name', 'AkamaiCC_email')->execute();
+}
