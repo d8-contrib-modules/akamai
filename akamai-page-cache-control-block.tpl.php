@@ -7,5 +7,7 @@
  */
 ?>
 <div id="akamai-cache-control-block">
+  FORM STARTS HERE
   <?php print $cache_control_form; ?>
+  FORM ENDS HERE
 </div>

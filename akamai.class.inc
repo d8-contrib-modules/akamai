@@ -5,7 +5,25 @@
  *    Akamai is a registered trademark of Akamai Technologies, Inc.
  *    This class is an abstraction around the Akamai Cache Control API.       
  */ 
-class AkamaiCacheControl { 
+ 
+interface AkamaiCacheControl {
+  /**
+   * Clears the provided URLs from the Akamai Content Cache.
+   *
+   * @param $paths
+   *    A path (or array of paths) to clear from Akamai
+   * @return
+   *    An array with 2 keys:
+   *       success: TRUE or FALSE indicating cache clearing success
+   *       message: Blank if successful, the error message if not successful.
+   */
+  function clear_url($paths);
+} 
+ 
+/**
+ * Default implementation of the AkamaiCacheControl interface
+ */
+class AkamaiCacheControlClient implements AkamaiCacheControl { 
 
   private $defaults; //akamai_get_defaults();
 
@@ -22,14 +40,14 @@ class AkamaiCacheControl {
    */
   function __construct($options = array()) {
     $this->defaults =  array(
-      'basepath'  => variable_get("AkamaiCC_basepath", ""),
-      'name'      => variable_get("AkamaiCC_name", ""),
-      'pwd'       => variable_get("AkamaiCC_pwd", ""),
-      'action'    => variable_get("AkamaiCC_action", ""),
+      'basepath'  => variable_get("akamai_basepath", ""),
+      'name'      => variable_get("akamai_username", ""),
+      'pwd'       => variable_get("akamai_password", ""),
+      'action'    => variable_get("akamai_action", ""),
       'type'      => "arl",
-      'domain'    => variable_get("AkamaiCC_domain", ""),               
-      'soap_wsdl' => variable_get("AkamaiCC_soap_wsdl", ""),
-      'email'     => variable_get("AkamaiCC_email", ""),
+      'domain'    => variable_get("akamai_domain", ""),               
+      'soap_wsdl' => variable_get("akamai_wsdl", ""),
+      'email'     => variable_get("akamai_email", ""),
     );
                                                                               
     $this->parameters = array_merge($this->defaults, $options);
@@ -72,7 +90,6 @@ class AkamaiCacheControl {
       $opt[] = "email-notification=$email";
     }
     
-    // create soap object
     try {
       $ccuapi = new SoapClient($soap_wsdl,
         array(
@@ -81,23 +98,78 @@ class AkamaiCacheControl {
         )
       );
       
-      // call web service
       $response = $ccuapi->purgeRequest($name, $pwd, $network, $opt, $uris);
       $is_success = ($response->resultCode < 300);
-      $message = $response->resultCode .": ". $response->resultMsg;
       if (!$is_success) {
         throw new Exception($message);
       }
       foreach ($uris as $uri) {
         watchdog('Akamai', t("Akamai %action of %uri: %message"), 
-          array('%uri' => $uri, '%action' => $action, '%message' => $message), WATCHDOG_NOTICE);
+          array('%uri' => $uri, '%action' => $action, '%message' => $response->resultMsg), WATCHDOG_NOTICE);
       }
+      
+      return array(
+        'success' => TRUE,
+        'code' => $response->resultCode,
+        'message' => $response->resultMsg,
+      );
     }
     catch (Exception $e) {
       watchdog('Akamai', t("Error Clearing Akamai Cache: %msg"), array('%msg' => $e->getMessage()));
       throw $e;
     }
+  }
+}
 
-    return $message;
+/**
+ * Implementation of the AkamaiCacheControl interface that records what was sent to it.
+ * Hint: This is only useful for testing.
+ */
+class RecordingCacheControlClient implements AkamaiCacheControl { 
+
+  public $paths;
+  public $options;
+                                                                              
+  /**                                                                
+   * Constructs an instance of the Akamai Cache Control facade.
+   */
+  function __construct($options = array()) {
+    $this->options = $options;
+  }
+
+  /**
+   * Records the paths passed in.
+   */
+  function clear_url($paths) {
+    if (!is_array($paths)) {
+      $paths = array($paths);
+    }
+    $this->paths = $paths;
+    
+    return array(
+      'success' => TRUE,
+      'code' => '',
+      'message' => '',
+    );
+  }
+}
+
+/**
+ * Implementation of the AkamaiCacheControl interface that throws Exceptions. 
+ * Hint: This is only useful for testing.
+ */
+class ErrorCacheControlClient implements AkamaiCacheControl { 
+                                                                              
+  /**                                                                
+   * Constructs an instance of the Akamai Cache Control facade.
+   */
+  function __construct($options = array()) {
+  }
+
+  /**
+   * Records the paths passed in.
+   */
+  function clear_url($paths) {
+    throw new Exception(t('Akamai Failure Condition Test'));
   }
 }

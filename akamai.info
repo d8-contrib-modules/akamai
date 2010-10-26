@@ -1,5 +1,9 @@
 ; $Id$
 name = Akamai Integration
 description = Cache Control integration with Akamai CDN, Akamai is a registered trademark of Akamai Technologies, Inc.
-core = "6.x"
-php = 5.1
+core = 7.x
+
+files[] = akamai.admin.inc
+files[] = akamai.class.inc
+files[] = akamai.test
+files[] = akamai.module

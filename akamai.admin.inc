@@ -13,38 +13,38 @@
 function akamai_settings() {
   $form = array();
 
-  $form['AkamaiCC_soap_wsdl'] = array(
+  $form['akamai_wsdl'] = array(
     '#type'          => 'textfield',
     '#title'         => t('SOAP WSDL'),
-    '#default_value' => variable_get('AkamaiCC_soap_wsdl', ''),
+    '#default_value' => variable_get('akamai_wsdl', ''),
     '#description'   => t('The URL of the Akamai SOAP call WSDL, e.g. "https://soap.example.com/example.wsdl"')
   );
 
-  $form['AkamaiCC_basepath'] = array(
+  $form['akamai_basepath'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Base Path'),
-    '#default_value' => variable_get('AkamaiCC_basepath', ''),
+    '#default_value' => variable_get('akamai_basepath', ''),
     '#description'   => t('The URL of the base path (fully qualified domain name) of the site.  This will be used as a prefix for all cache clears (Akamai indexs on the full URI). e.g. "http://www.example.com"')
   );
 
-  $form['AkamaiCC_name'] = array(
+  $form['akamai_username'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Cache clearing user'),
-    '#default_value' => variable_get('AkamaiCC_name', ''),
+    '#default_value' => variable_get('akamai_username', ''),
     '#description'   => t('The user name of the account being used for cache clearing (most likely an email)')
   );
 
-  $form['AkamaiCC_pwd'] = array(
+  $form['akamai_password'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Cache clearing password'),
-    '#default_value' => variable_get('AkamaiCC_pwd', ''),
+    '#default_value' => variable_get('akamai_password', ''),
     '#description'   => t('The password of the cache clearing user')
   );
 
-  $form['AkamaiCC_domain'] = array(
+  $form['akamai_domain'] = array(
     '#type'          => 'select',
     '#title'         => t('Domain'),
-    '#default_value' => variable_get('AkamaiCC_domain', 'staging'),
+    '#default_value' => variable_get('akamai_domain', 'staging'),
     '#options'       => array(
       'staging'    => t('Staging'),
       'production' => t('Production'), 
@@ -52,20 +52,20 @@ function akamai_settings() {
     '#description'   => t('The Akamai domain to use for cache clearing')
   );
 
-  $form['AkamaiCC_action'] = array(
+  $form['akamai_action'] = array(
     '#type'          => 'select',
     '#title'         => t('Clearing Action Type Default'),
-    '#default_value' => variable_get('AkamaiCC_action', 'remove'),
+    '#default_value' => variable_get('akamai_action', 'remove'),
     '#options'       => array(
       'remove'     => t('Remove'),
       'invalidate' => t('Invalidate'), 
     ),
     '#description'   => t('The default clearing action.  The options are <em>remove</em> (which removes the item from the Akamai cache) and <em>invalidate</em> (which leaves the item in the cache, but invalidates it so that the origin will be hit on the next request)')
   );
-  $form['AkamaiCC_email'] = array(
+  $form['akamai_email'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Email Notification Override'),
-    '#default_value' => variable_get('AkamaiCC_email', ''),
+    '#default_value' => variable_get('akamai_email', ''),
     '#description'   => t('If this email address is specified all cache clearing requests will send notifications to this address.  If this address is not specified, the email address of the user executing the request will be used.')
   );
   return system_settings_form($form);
@@ -80,13 +80,13 @@ function akamai_cache_control() {
   $form['paths'] = array(
     '#type'        => 'textarea',
     '#title'       => t('Paths/URLs'),
-    '#description' => t('Enter one URL per line. URL entries should be relative to the basepath.'),
+    '#description' => t('Enter one URL per line. URL entries should be relative to the basepath. (e.g. node/1, content/pretty-title, sites/default/files/some/image.png'),
   );
   
   $form['domain_override'] = array(
     '#type'          => 'select',
     '#title'         => t('Domain'),
-    '#default_value' => variable_get('AkamaiCC_domain', 'staging'),
+    '#default_value' => variable_get('akamai_domain', 'staging'),
     '#options'       => array(
       'staging'    => t('Staging'),
       'production' => t('Production'), 
@@ -97,7 +97,7 @@ function akamai_cache_control() {
   $form['refresh'] = array(
     '#type'        => 'radios',
     '#title'       => t('Clearing Action Type'),
-    '#default_value' => variable_get('AkamaiCC_action', ''), 
+    '#default_value' => variable_get('akamai_action', ''), 
     '#options'     => array(
       'remove'     => t('Remove'), 
       'invalidate' => t('Invalidate'), 
@@ -142,7 +142,7 @@ function akamai_cache_control_submit($form, &$form_state) {
     drupal_set_message($message);
   }
   else {
-    drupal_set_message( t("There was a problem with your cache control request.  Check the !watchdog messages for more information.", array('!watchdog' => l("watchdog", "admin/reports/dblog") ), 'error') );
+    drupal_set_message( t("There was a problem with your cache control request.  Check your log messages for more information.", array(), 'error') );
   }
 }
 
