@@ -1,6 +1,26 @@
 <?php
 
 /**
+ * Implementation of hook_requirements().
+ */
+function akamai_requirements($phase) {
+  $requirements = array(); 
+  $t = get_t();
+
+  $requirements['SoapClient']['title'] = $t('SoapClient class');
+  if ( !class_exists('SoapClient') ) {
+    $requirements['SoapClient']['value'] = $t('Not installed');
+    $requirements['SoapClient']['severity'] = REQUIREMENT_ERROR;
+    $requirements['SoapClient']['description'] = $t('The SoapClient library is not installed. Either install the php-soap extension, or otherwise make the library available to PHP.');
+  } else {
+    $requirements['SoapClient']['value'] = $t('Installed');
+    $requirements['SoapClient']['severity'] = REQUIREMENT_OK;
+  
+  }    
+  return $requirements;
+}
+
+/**
  * Update hook for upgrading to Drupal 7.
  */
 function akamai_update_7000() {
