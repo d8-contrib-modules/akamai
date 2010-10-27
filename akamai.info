@@ -1,9 +1,10 @@
 ; $Id$
-name = Akamai Integration
+name = Akamai
 description = Cache Control integration with Akamai CDN, Akamai is a registered trademark of Akamai Technologies, Inc.
 core = 7.x
 
 files[] = akamai.admin.inc
 files[] = akamai.class.inc
 files[] = akamai.test
+files[] = akamai.install
 files[] = akamai.module
