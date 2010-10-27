@@ -229,15 +229,15 @@ function _akamai_get_all_paths($url, $node = NULL) {
   $paths[] = $source;
   
   
-  $result = db_select('SELECT alias FROM {url_alias} WHERE source = :source AND language IN (:language, :language_none)',
+  $result = db_query('SELECT alias FROM {url_alias} WHERE source = :source AND language IN (:language, :language_none)',
                       array(
                         ':source' => $source, 
-                        ':language' => $language->language,
+                        ':language' => isset($language->language) ? $language->language : '',
                         ':language_none' => LANGUAGE_NONE,
-                      ))->execute();
+                      ));
       
-  foreach ($result as $alias) {
-    $paths[] = $alias;
+  foreach ($result as $record) {
+    $paths[] = $record->alias;
   }
 
   // Allow other modules to add/modify paths to be cleared  
@@ -274,6 +274,9 @@ function akamai_get_class($params = array()) {
  * from context_http_header module 
  * These are the form items that display for the http header context reaction.
  */
+/* 
+ AWAITING UPGRADE OF context_http_headers TO DRUPAL 7
+  
 function akamai_context_http_header_def() {
   return array(
     'akamai_ttl' => array(
@@ -315,6 +318,7 @@ function akamai_context_http_header_def() {
 
   );
 }
+*/
 
 /**
  * @param $http_header_items
@@ -327,6 +331,10 @@ function akamai_context_http_header_def() {
  *    'header-2' => array(...),
  * )
  */
+ 
+/* 
+ AWAITING UPGRADE OF context_http_headers TO DRUPAL 7
+ 
 function akamai_context_http_header_build($http_header_items) {
   $header_builds = array();
   if ($value = $http_header_items['akamai_ttl']) {
@@ -365,3 +373,4 @@ function akamai_context_http_header_build($http_header_items) {
   
   return $header_builds;
 }
+*/
