@@ -1,0 +1,7 @@
+name = Akamai Test
+description = Supports Akamai hooks for testing
+version = VERSION
+core = 7.x
+files[] = akamai_test.module
+dependencies[] = akamai
+hidden = TRUE

@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * Test adding a special path via the akamai_paths alter hook.
+ */
+function akamai_test_akamai_paths_alter(&$paths, $node) {
+  $paths[] = "akamai/paths/alter/test";
+}
