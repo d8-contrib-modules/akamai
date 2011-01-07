@@ -97,11 +97,11 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
           'features' => SOAP_USE_XSI_ARRAY_TYPE,
         )
       );
-      
-      $response = $ccuapi->purgeRequest($name, $pwd, $network, $opt, $uris);
+
+      $response = $ccuapi->purgeRequest($name, $pwd, '', $opt, $uris);
       $is_success = ($response->resultCode < 300);
       if (!$is_success) {
-        throw new Exception($message);
+        throw new Exception($response->resultMsg);
       }
       foreach ($uris as $uri) {
         watchdog('Akamai', t("Akamai %action of %uri: %message"), 

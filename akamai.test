@@ -118,6 +118,56 @@ class AkamaiTestCase extends DrupalWebTestCase {
 /**
  * Test basic API.
  */
+class AkamaiHomepageTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Akamai Homepage Clearing',
+      'description' => 'Test Akamai cache clearings of the site homepage.',
+      'group' => 'Akamai',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('akamai');
+    $user = $this->drupalCreateUser(array('purge akamai cache'));
+    $this->drupalLogin($user);
+    variable_set('akamai_service_class', 'RecordingCacheControlClient');
+    
+    $this->node = $this->drupalCreateNode(array('type' => 'page'));
+    $this->homepage = "node/{$this->node->nid}";
+    variable_set('site_frontpage', $this->homepage);
+  }
+  
+  /**
+   * Tests clear of homepage and rendering of block
+   */
+  function testHomepageClear() {
+    $block = block_load('akamai', 'akamai');
+    db_update('block')
+      ->fields(array('region' => 'footer', 'status' => 1))
+      ->condition('module', $block->module)
+      ->condition('delta', $block->delta)
+      ->condition('theme', $block->theme)
+      ->execute();
+
+    $this->drupalGet($this->homepage);
+    $this->assertFieldByName('path', $this->homepage, 'The Akamai path field is set correctly');
+    $this->assertUniqueText(t('[frontpage]'), t('Make sure the text "[frontpage]" appears exactly once on the home page.'));
+
+    $response = akamai_clear_url($this->homepage, array(), $this->node);
+    $paths = $response['client']->paths;
+    
+    $this->assertEqual(2, count($paths), "Two paths cleared");
+    $this->assertEqual($this->homepage, $paths[0], "Correct homepage real path was cleared");
+    $this->assertEqual('', $paths[1], "Correct homepage path was cleared");
+  }
+}
+
+
+/**
+ * Test basic API.
+ */
 class AkamaiHookTestCase extends DrupalWebTestCase {
 
   public static function getInfo() {

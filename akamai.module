@@ -122,13 +122,21 @@ function akamai_block_view($delta) {
  * Form for purging the current URL from the Akamai cache.
  */
 function akamai_page_cache_control_form() {
-  $form = array();
-  
-  $path = check_plain($_GET['q']);
+  $form = array();  
   $nid = arg(1);
+  
   if (arg(0) == 'node' && is_numeric($nid) && arg(2) == NULL) {
     $path = arg(0) . '/' . $nid; 
+    $path_label = $path;
     $form['#node'] = node_load($nid);
+  } 
+  else { 
+    $path = check_plain($_GET['q']);
+    $form['#node'] = NULL;
+  }
+
+  if ($path == variable_get('site_frontpage', 'node')) {
+    $path_label = t("[frontpage]");
   }
   
   $form['path'] = array(
@@ -138,7 +146,7 @@ function akamai_page_cache_control_form() {
   $form['message'] = array(
     '#type'  => 'item',
     '#title' => t('Refresh URL'),
-    '#markup' => $path,
+    '#markup' => $path_label,
   );
   $form['submit'] = array(
     '#type'  => 'submit',
@@ -163,7 +171,7 @@ function akamai_page_cache_control_form_submit($form, &$form_state) {
     drupal_set_message($message);
   }
   else {
-    drupal_set_message(t("There was a problem clearing the cache for this page.  Check your log messages for more information.", array(), 'error') );
+    drupal_set_message(t("There was a problem clearing the cache for this page.  Check your log messages for more information.", array()), 'error'));
   }
 }
 
@@ -238,6 +246,11 @@ function _akamai_get_all_paths($url, $node = NULL) {
       
   foreach ($result as $record) {
     $paths[] = $record->alias;
+  }
+
+  // If this is the frontpage, add a blank to clear the root doc
+  if ($source == variable_get('site_frontpage', 'node')) {
+    $paths[] = '';
   }
 
   // Allow other modules to add/modify paths to be cleared  
