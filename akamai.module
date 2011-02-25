@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file akamai.module
  *    Integration with the Akamai CDN Cache Control Web Service.

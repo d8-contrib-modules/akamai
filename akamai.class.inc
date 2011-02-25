@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file akamai.class.inc
  *    Akamai is a registered trademark of Akamai Technologies, Inc.

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file akamai-page-cache-control-form.tpl
  * Default theme implementation for displaying an akamai cache clearing 
