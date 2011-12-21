@@ -71,23 +71,23 @@ function akamai_theme() {
 }
 
 /**
- * Implementation of hook_nodeapi_update().
+ * Implementation of hook_node_update().
  *
  * When nodes are modified, clear URL from the Akamai
  * cache. Clear base node/% url as well as aliases.
  */
-function akamai_nodeapi_update(&$node) {
+function akamai_node_update($node) {
   $url = base_path() . "node/{$node->nid}";
   akamai_clear_url($url, array('email' => AKAMAI_EMAIL_DISABLE), $node);
 }
 
 /**
- * Implementation of hook_nodeapi_delete().
+ * Implementation of hook_node_delete().
  *
  * When nodes are modified, clear URL from the Akamai
  * cache. Clear base node/% url as well as aliases.
  */
-function akamai_nodeapi_delete(&$node) {
+function akamai_node_delete($node) {
   $url = base_path() . "node/{$node->nid}";
   akamai_clear_url($url, array('email' => AKAMAI_EMAIL_DISABLE), $node);
 }
