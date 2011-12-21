@@ -31,10 +31,10 @@ class AkamaiTestCase extends DrupalWebTestCase {
   function testDirectClear() {
     $node = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
     $canonical = "node/{$node->nid}";
-    
+
     $akamai = akamai_get_class();
     $akamai->clear_url($canonical);
-    
+
     $paths = $akamai->paths;
     $this->assertEqual(1, count($paths), "Only one path cleared");
     $this->assertEqual($canonical, $paths[0]);
@@ -48,11 +48,11 @@ class AkamaiTestCase extends DrupalWebTestCase {
     $canonical = "node/{$node->nid}";
     $response = akamai_clear_url($canonical, array(), $node);
     $paths = $response['client']->paths;
-    
+
     $this->assertEqual(1, count($paths), "Only one path cleared");
     $this->assertEqual($canonical, $paths[0], "Correct path was cleared");
   }
-  
+
   /**
    * Tests clear with 1 alias.
    */
@@ -60,7 +60,7 @@ class AkamaiTestCase extends DrupalWebTestCase {
     $node = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
     $canonical = "node/{$node->nid}";
     $cleanurl = "content/pretty-title/{$node->nid}";
-    
+
     $alias = array(
       'source' => $canonical,
       'alias' => $cleanurl,
@@ -69,7 +69,7 @@ class AkamaiTestCase extends DrupalWebTestCase {
 
     $response = akamai_clear_url($canonical, array(), $node);
     $paths = $response['client']->paths;
-    
+
     $this->assertEqual(2, count($paths), "Two paths cleared");
     $this->assertEqual($canonical, $paths[0], "Correct canonical path was cleared");
     $this->assertEqual($cleanurl, $paths[1], "Correct alias was cleared");
@@ -84,13 +84,13 @@ class AkamaiTestCase extends DrupalWebTestCase {
     $cleanurl1 = "content/pretty-title/{$node->nid}";
     $cleanurl2 = "blog/better-title/{$node->nid}";
     $cleanurl3 = "article/another-title/{$node->nid}";
-    
+
     $alias = array(
       'source' => $canonical,
       'alias' => $cleanurl1,
     );
     path_save($alias);
-    
+
     $alias = array(
       'source' => $canonical,
       'alias' => $cleanurl2,
@@ -105,7 +105,7 @@ class AkamaiTestCase extends DrupalWebTestCase {
 
     $response = akamai_clear_url($canonical, array(), $node);
     $paths = $response['client']->paths;
-    
+
     $this->assertEqual(4, count($paths), "Four paths cleared");
     $this->assertEqual($canonical, $paths[0], "Correct canonical path was cleared");
     $this->assertEqual($cleanurl1, $paths[1], "Correct alias 1 path was cleared");
@@ -132,12 +132,12 @@ class AkamaiHomepageTestCase extends DrupalWebTestCase {
     $user = $this->drupalCreateUser(array('purge akamai cache'));
     $this->drupalLogin($user);
     variable_set('akamai_service_class', 'RecordingCacheControlClient');
-    
+
     $this->node = $this->drupalCreateNode(array('type' => 'page'));
     $this->homepage = "node/{$this->node->nid}";
     variable_set('site_frontpage', $this->homepage);
   }
-  
+
   /**
    * Tests clear of homepage and rendering of block
    */
@@ -156,7 +156,7 @@ class AkamaiHomepageTestCase extends DrupalWebTestCase {
 
     $response = akamai_clear_url($this->homepage, array(), $this->node);
     $paths = $response['client']->paths;
-    
+
     $this->assertEqual(2, count($paths), "Two paths cleared");
     $this->assertEqual($this->homepage, $paths[0], "Correct homepage real path was cleared");
     $this->assertEqual('', $paths[1], "Correct homepage path was cleared");
@@ -192,13 +192,13 @@ class AkamaiHookTestCase extends DrupalWebTestCase {
     $canonical = "node/{$node->nid}";
     $response = akamai_clear_url($canonical, array(), $node);
     $paths = $response['client']->paths;
-    
+
     $this->assertEqual(2, count($paths), "Two paths cleared");
     $this->assertEqual($canonical, $paths[0], "Correct canonical path was cleared");
     $this->assertEqual("akamai/paths/alter/test", $paths[1], "Correct hook provided path was cleared");
   }
-  
-  
+
+
 }
 
 

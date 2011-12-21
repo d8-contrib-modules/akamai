@@ -5,9 +5,9 @@
  *   Akamai is a registered trademark of Akamai Technologies, Inc.
  *   Administrative pages for the Akamai module.
  */
- 
+
 /**
- * General Settings for Akamai 
+ * General Settings for Akamai
  */
 function akamai_settings() {
   $form = array();
@@ -46,7 +46,7 @@ function akamai_settings() {
     '#default_value' => variable_get('akamai_domain', 'staging'),
     '#options'       => array(
       'staging'    => t('Staging'),
-      'production' => t('Production'), 
+      'production' => t('Production'),
     ),
     '#description'   => t('The Akamai domain to use for cache clearing')
   );
@@ -57,7 +57,7 @@ function akamai_settings() {
     '#default_value' => variable_get('akamai_action', 'remove'),
     '#options'       => array(
       'remove'     => t('Remove'),
-      'invalidate' => t('Invalidate'), 
+      'invalidate' => t('Invalidate'),
     ),
     '#description'   => t('The default clearing action.  The options are <em>remove</em> (which removes the item from the Akamai cache) and <em>invalidate</em> (which leaves the item in the cache, but invalidates it so that the origin will be hit on the next request)')
   );
@@ -75,35 +75,35 @@ function akamai_settings() {
  */
 function akamai_cache_control() {
   $form = array();
-  
+
   $form['paths'] = array(
     '#type'        => 'textarea',
     '#title'       => t('Paths/URLs'),
     '#description' => t('Enter one URL per line. URL entries should be relative to the basepath. (e.g. node/1, content/pretty-title, sites/default/files/some/image.png'),
   );
-  
+
   $form['domain_override'] = array(
     '#type'          => 'select',
     '#title'         => t('Domain'),
     '#default_value' => variable_get('akamai_domain', 'staging'),
     '#options'       => array(
       'staging'    => t('Staging'),
-      'production' => t('Production'), 
+      'production' => t('Production'),
     ),
-    '#description'   => t('The Akamai domain to use for cache clearing.  Defaults to the Domain setting from the settings page.')  
+    '#description'   => t('The Akamai domain to use for cache clearing.  Defaults to the Domain setting from the settings page.')
   );
-  
+
   $form['refresh'] = array(
     '#type'        => 'radios',
     '#title'       => t('Clearing Action Type'),
-    '#default_value' => variable_get('akamai_action', ''), 
+    '#default_value' => variable_get('akamai_action', ''),
     '#options'     => array(
-      'remove'     => t('Remove'), 
-      'invalidate' => t('Invalidate'), 
+      'remove'     => t('Remove'),
+      'invalidate' => t('Invalidate'),
     ),
     '#description' => t('<b>Remove:</b> Purge the content from Akamai edge server caches. The next time the edge server receives a request for the content, it will retrieve the current version from the origin server. If it cannot retrieve a current version, it will follow instructions in your edge server configuration.<br/><br/><b>Invalidate:</b> Mark the cached content as invalid. The next time the Akamai edge server receives a request for the content, it will send an HTTP conditional get (If-Modified-Since) request to the origin. If the content has changed, the origin server will return a full fresh copy; otherwise, the origin normally will respond that the content has not changed, and Akamai can serve the already-cached content.<br/><br/><b>Note that <em>Remove</em> can increase the load on the origin more than <em>Invalidate</em>.</b> With <em>Invalidate</em>, objects are not removed from cache and full objects are not retrieved from the origin unless they are newer than the cached versions.'),
   );
-  
+
   $default_email = akamai_get_notification_email();
   $form['email'] = array(
     '#type'          => 'textfield',
@@ -115,7 +115,7 @@ function akamai_cache_control() {
     '#type'  => 'submit',
     '#value' => t('Start Refreshing Content'),
   );
-  
+
   return $form;
 }
 
@@ -128,13 +128,13 @@ function akamai_cache_control() {
 function akamai_cache_control_submit($form, &$form_state) {
   $paths = split("\n", filter_xss($form_state['values']['paths']));
   $action = $form_state['values']['refresh'];
-  
+
   $overrides = array(
     'action' => $form_state['values']['refresh'],
     'domain' => $form_state['values']['domain_override'],
     'email'  => $form_state['values']['email'],
   );
-  
+
   $did_clear = akamai_clear_url($paths, $overrides);
   if ($did_clear) {
     $message = t("Akamai Cache Request has been made successfully, please allow 10 minutes for changes to take effect.") . theme("item_list", $paths);

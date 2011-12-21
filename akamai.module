@@ -29,7 +29,7 @@ function akamai_permission() {
  */
 function akamai_menu() {
   $items = array();
-  
+
   $items['admin/config/system/akamai'] = array(
     'title' => 'Akamai',
     'description' => 'Akamai integration settings and cache clearing utility',
@@ -38,7 +38,7 @@ function akamai_menu() {
     'access arguments' => array('administer akamai'),
     'file' => 'akamai.admin.inc',
   );
-  
+
   $items['admin/config/system/akamai/settings'] = array(
     'title' => 'Settings',
     'weight' => -10,
@@ -112,7 +112,7 @@ function akamai_block_view($delta) {
     $block = array(
       'subject' => t('Akamai Cache Control'),
       'content' => $cache_control_form,
-    ); 
+    );
     return $block;
   }
 }
@@ -121,15 +121,15 @@ function akamai_block_view($delta) {
  * Form for purging the current URL from the Akamai cache.
  */
 function akamai_page_cache_control_form() {
-  $form = array();  
+  $form = array();
   $nid = arg(1);
-  
+
   if (arg(0) == 'node' && is_numeric($nid) && arg(2) == NULL) {
-    $path = arg(0) . '/' . $nid; 
+    $path = arg(0) . '/' . $nid;
     $path_label = $path;
     $form['#node'] = node_load($nid);
-  } 
-  else { 
+  }
+  else {
     $path = check_plain($_GET['q']);
     $form['#node'] = NULL;
   }
@@ -137,9 +137,9 @@ function akamai_page_cache_control_form() {
   if ($path == variable_get('site_frontpage', 'node')) {
     $path_label = t("[frontpage]");
   }
-  
+
   $form['path'] = array(
-    '#type'  => 'hidden', 
+    '#type'  => 'hidden',
     '#value' => $path
   );
   $form['message'] = array(
@@ -151,7 +151,7 @@ function akamai_page_cache_control_form() {
     '#type'  => 'submit',
     '#value' => t('Refresh Akamai Cache'),
   );
-  
+
   return $form;
 }
 
@@ -161,7 +161,7 @@ function akamai_page_cache_control_form() {
  * Purge the 'path' variable from the Akamai cache.
  *
  */
-function akamai_page_cache_control_form_submit($form, &$form_state) {  
+function akamai_page_cache_control_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $path = $values['path'];
   $did_clear = akamai_clear_url($path, array(), $form['#node']);
@@ -190,18 +190,18 @@ function akamai_clear_url($paths_in, $params = array(), $node = NULL) {
   }
   // Get the system path and all aliases to this url
   $paths = array();
-    
+
   foreach ($paths_in as $path) {
     $paths = array_merge($paths, _akamai_get_all_paths($path, $node));
   }
   $paths = array_unique($paths);
-  
+
   // Setup the notification email if an email address is not provided
   if ( !array_key_exists('email', $params) || empty($params['email'])) {
     $params['email'] = akamai_get_notification_email();
   }
-  
-  try {  
+
+  try {
     $akamai = akamai_get_class($params);
     $response = $akamai->clear_url($paths);
     $response['client'] = $akamai;
@@ -234,15 +234,15 @@ function _akamai_get_all_paths($url, $node = NULL) {
   }
   $source = preg_replace("/^\//", "", $source);
   $paths[] = $source;
-  
-  
+
+
   $result = db_query('SELECT alias FROM {url_alias} WHERE source = :source AND language IN (:language, :language_none)',
                       array(
-                        ':source' => $source, 
+                        ':source' => $source,
                         ':language' => isset($language->language) ? $language->language : '',
                         ':language_none' => LANGUAGE_NONE,
                       ));
-      
+
   foreach ($result as $record) {
     $paths[] = $record->alias;
   }
@@ -252,10 +252,10 @@ function _akamai_get_all_paths($url, $node = NULL) {
     $paths[] = '';
   }
 
-  // Allow other modules to add/modify paths to be cleared  
+  // Allow other modules to add/modify paths to be cleared
   drupal_alter('akamai_paths', $paths, $node);
 
-  return $paths;  
+  return $paths;
 }
 
 /**
@@ -282,13 +282,13 @@ function akamai_get_class($params = array()) {
 }
 
 /**
- * Implementation of hook_context_http_header_def() 
- * from context_http_header module 
+ * Implementation of hook_context_http_header_def()
+ * from context_http_header module
  * These are the form items that display for the http header context reaction.
  */
-/* 
+/*
  AWAITING UPGRADE OF context_http_headers TO DRUPAL 7
-  
+
 function akamai_context_http_header_def() {
   return array(
     'akamai_ttl' => array(
@@ -301,8 +301,8 @@ function akamai_context_http_header_def() {
       '#type'          => 'radios',
       '#description'   => t("Specifies that the object is not to be cached. The edge server will retrieve the object from the origin server upon every request."),
       '#options'       => array(
-        FALSE  => t('Not Specified'), 
-        'on'   => t('On'), 
+        FALSE  => t('Not Specified'),
+        'on'   => t('On'),
         'off'  => t('Off')
       ),
     ),
@@ -311,8 +311,8 @@ function akamai_context_http_header_def() {
       '#type'          => 'radios',
       '#description'   => t("When enabled, bypass-cache causes the request to be passed without caching. It's similar to no-store, except that it doesn't remove the cache entry if one already exists. This is useful if the object returned is an alternate for the content normally delivered"),
       '#options'       => array(
-        FALSE  => t('Not Specified'), 
-        'on'   => t('On'), 
+        FALSE  => t('Not Specified'),
+        'on'   => t('On'),
         'off'  => t('Off')
       ),
     ),
@@ -321,10 +321,10 @@ function akamai_context_http_header_def() {
       '#type'  => 'radios',
       '#description' => t('Nominates the request for Dynamic Content Assembly. Valid argument is a type of processing. This header is used to nominate the object for ESI processing. At this time, "esi" and "akamaizer" specify the available processing types. These headers tell the edge server to process the objects in the ESI processor. The other header dca=noop, tells the edge server not to process the associated content.'),
       '#options' => array(
-        FALSE   => t('Not Specified'), 
+        FALSE   => t('Not Specified'),
         'noop'  => t('noop'),
         'esi'   => t('esi'),
-        'akamaizer' => t('akamaizer'), 
+        'akamaizer' => t('akamaizer'),
       ),
     ),
 
@@ -334,25 +334,25 @@ function akamai_context_http_header_def() {
 
 /**
  * @param $http_header_items
- * 
- * Implemantation of hook_http_header_build  
+ *
+ * Implemantation of hook_http_header_build
  * from context_http_header module
  * build the akamai edge control headers
- * array( 
+ * array(
  *    'header-1' => array('value1', 'value2', etc),
  *    'header-2' => array(...),
  * )
  */
- 
-/* 
+
+/*
  AWAITING UPGRADE OF context_http_headers TO DRUPAL 7
- 
+
 function akamai_context_http_header_build($http_header_items) {
   $header_builds = array();
   if ($value = $http_header_items['akamai_ttl']) {
     $header_builds["Edge-Control"][] = "Cache-maxage=". check_plain($value);
   }
-  
+
   if ($value = $http_header_items['akamai_nostore']) {
     if ($value == 'on') {
       $header_builds["Edge-Control"][] = "No-store";
@@ -361,7 +361,7 @@ function akamai_context_http_header_build($http_header_items) {
       $header_builds["Edge-Control"][] = "!No-store";
     }
   }
-  
+
   if ($value = $http_header_items['akamai_bypass_cache']) {
     if ($value == 'on') {
       $header_builds["Edge-Control"][] = "bypass-cache";
@@ -370,7 +370,7 @@ function akamai_context_http_header_build($http_header_items) {
       $header_builds["Edge-Control"][] = "!bypass-cache";
     }
   }
-  
+
   if ($value = $http_header_items['akamai_dynamic_content_assembly']) {
     if ($value == 'noop') {
       $header_builds["Edge-Control"][] = "dca=noop";
@@ -382,7 +382,7 @@ function akamai_context_http_header_build($http_header_items) {
       $header_builds["Edge-Control"][] = "dca=akamaizer";
     }
   }
-  
+
   return $header_builds;
 }
 */
