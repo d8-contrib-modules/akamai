@@ -170,7 +170,7 @@ function akamai_page_cache_control_form_submit($form, &$form_state) {
     drupal_set_message($message);
   }
   else {
-    drupal_set_message(t("There was a problem clearing the cache for this page.  Check your log messages for more information.", array()), 'error');
+    drupal_set_message(t("There was a problem clearing the cache for this page.  Check your log messages for more information."), 'error');
   }
 }
 
