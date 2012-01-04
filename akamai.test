@@ -112,6 +112,7 @@ class AkamaiTestCase extends DrupalWebTestCase {
     $this->assertEqual($cleanurl2, $paths[2], "Correct alias 2 path was cleared");
     $this->assertEqual($cleanurl3, $paths[3], "Correct alias 3 path was cleared");
   }
+
 }
 
 /**
@@ -198,7 +199,13 @@ class AkamaiHookTestCase extends DrupalWebTestCase {
     $this->assertEqual("akamai/paths/alter/test", $paths[1], "Correct hook provided path was cleared");
   }
 
-
+  /**
+   * Tests clear with no paths.
+   */
+  function testEmptyClear() {
+    $response = akamai_clear_url('clear/me');
+    $this->assertFalse($response, "False returned");
+  }
 }
 
 

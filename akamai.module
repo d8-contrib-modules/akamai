@@ -194,6 +194,14 @@ function akamai_clear_url($paths_in, $params = array(), $node = NULL) {
   foreach ($paths_in as $path) {
     $paths = array_merge($paths, _akamai_get_all_paths($path, $node));
   }
+
+  // It is possible to have no paths at this point if other modules have
+  // altered the paths
+  if (empty($paths)) {
+    watchdog('akamai', 'No resultant paths to clear for %paths', array('%paths' => implode(', ', $paths_in)), WATCHDOG_NOTICE);
+    return FALSE;
+  }
+
   $paths = array_unique($paths);
 
   // Setup the notification email if an email address is not provided
