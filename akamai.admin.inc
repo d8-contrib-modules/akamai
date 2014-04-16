@@ -19,6 +19,20 @@ function akamai_settings() {
     '#description'   => t('The URL of the Akamai SOAP call WSDL, e.g. "https://soap.example.com/example.wsdl"')
   );
 
+  $form['akamai_restapi'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('REST API URL'),
+    '#default_value' => variable_get('akamai_restapi', ''),
+    '#description'   => t('The URL of the Akamai REST API call e.g. "https://api.ccu.akamai.com/ccu/v2/queues/default"')
+  );
+
+  $form['akamai_restapi_default'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Rest API default'),
+    '#default_value' => variable_get('akamai_restapi_default', ''),
+    '#description' => t('This option if checked uses Rest API over SOAP'),
+  );
+
   $form['akamai_basepath'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Base Path'),
@@ -61,6 +75,7 @@ function akamai_settings() {
     ),
     '#description'   => t('The default clearing action.  The options are <em>remove</em> (which removes the item from the Akamai cache) and <em>invalidate</em> (which leaves the item in the cache, but invalidates it so that the origin will be hit on the next request)')
   );
+
   $form['akamai_email'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Email Notification Override'),
@@ -126,7 +141,7 @@ function akamai_cache_control() {
  * Process the settings and submit to Akamai
  */
 function akamai_cache_control_submit($form, &$form_state) {
-  $paths = split("\n", filter_xss($form_state['values']['paths']));
+  $paths = explode("\n", filter_xss($form_state['values']['paths']));
   $action = $form_state['values']['refresh'];
 
   $overrides = array(

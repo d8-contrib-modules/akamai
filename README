@@ -40,3 +40,11 @@ function HOOK_akamai_paths_alter(&$paths, $node)
  * $node If this is a node page you are viewing, this will be that node, otherwise
          it will be NULL.
 
+===================================================
+Rest API changes
+===================================================
+
+To enable and use RestAPI instead of SOAP, make sure RestAPI checkbox option is checked and Akamai
+server url is configured. If RestAPI is unchecked, SOAP will be used instead.
+
+Make sure PHP Curl libraries installed and enabled.

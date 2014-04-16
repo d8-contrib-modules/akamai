@@ -18,6 +18,15 @@ function akamai_requirements($phase) {
     $requirements['SoapClient']['severity'] = REQUIREMENT_OK;
 
   }
+
+  // Check is REST API is set as default, otherwise raise error
+  if (!variable_get('akamai_restapi_default', 0)) {
+    $requirements['rest_default']['title'] = $t('Akamai using REST');
+    $requirements['rest_default']['value'] = $t('REST not set as default method');
+    $requirements['rest_default']['severity'] = REQUIREMENT_WARNING;
+    $requirements['rest_default']['description'] = $t('REST is not set as the default method for issuing Akamai cache clears. Akamai has said that they will sunset SOAP support June 1 2014.');
+  }
+
   return $requirements;
 }
 
