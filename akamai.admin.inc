@@ -12,25 +12,11 @@
 function akamai_settings() {
   $form = array();
 
-  $form['akamai_wsdl'] = array(
-    '#type'          => 'textfield',
-    '#title'         => t('SOAP WSDL'),
-    '#default_value' => variable_get('akamai_wsdl', ''),
-    '#description'   => t('The URL of the Akamai SOAP call WSDL, e.g. "https://soap.example.com/example.wsdl"')
-  );
-
   $form['akamai_restapi'] = array(
     '#type'          => 'textfield',
     '#title'         => t('REST API URL'),
-    '#default_value' => variable_get('akamai_restapi', ''),
+    '#default_value' => variable_get('akamai_restapi', 'https://api.ccu.akamai.com/ques/default'),
     '#description'   => t('The URL of the Akamai REST API call e.g. "https://api.ccu.akamai.com/ccu/v2/queues/default"')
-  );
-
-  $form['akamai_restapi_default'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Rest API default'),
-    '#default_value' => variable_get('akamai_restapi_default', ''),
-    '#description' => t('This option if checked uses Rest API over SOAP'),
   );
 
   $form['akamai_basepath'] = array(

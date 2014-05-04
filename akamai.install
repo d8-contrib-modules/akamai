@@ -1,36 +1,6 @@
 <?php
 
 /**
- * Implementation of hook_requirements().
- */
-function akamai_requirements($phase) {
-  $requirements = array();
-  $t = get_t();
-
-  $requirements['SoapClient']['title'] = $t('SoapClient class');
-  if (!class_exists('SoapClient') ) {
-    $requirements['SoapClient']['value'] = $t('Not installed');
-    $requirements['SoapClient']['severity'] = REQUIREMENT_ERROR;
-    $requirements['SoapClient']['description'] = $t('The SoapClient library is not installed. Either install the php-soap extension, or otherwise make the library available to PHP.');
-  }
-  else {
-    $requirements['SoapClient']['value'] = $t('Installed');
-    $requirements['SoapClient']['severity'] = REQUIREMENT_OK;
-
-  }
-
-  // Check is REST API is set as default, otherwise raise error
-  if (!variable_get('akamai_restapi_default', 0)) {
-    $requirements['rest_default']['title'] = $t('Akamai using REST');
-    $requirements['rest_default']['value'] = $t('REST not set as default method');
-    $requirements['rest_default']['severity'] = REQUIREMENT_WARNING;
-    $requirements['rest_default']['description'] = $t('REST is not set as the default method for issuing Akamai cache clears. Akamai has said that they will sunset SOAP support June 1 2014.');
-  }
-
-  return $requirements;
-}
-
-/**
  * Update hook for upgrading to Drupal 7.
  */
 function akamai_update_7000() {
@@ -41,4 +11,14 @@ function akamai_update_7000() {
   db_update('variable')->fields(array('name' => 'akamai_domain'))->condition('name', 'AkamaiCC_domain')->execute();
   db_update('variable')->fields(array('name' => 'akamai_wsdl'))->condition('name', 'AkamaiCC_soap_wsdl')->execute();
   db_update('variable')->fields(array('name' => 'akamai_email'))->condition('name', 'AkamaiCC_email')->execute();
+}
+
+/**
+ * Update hook for upgrading to Drupal 7.x-2.x branch.
+ *
+ * Remove unneeded variables.
+ */
+function akamai_update_7001() {
+  variable_del('akamai_wsdl');
+  variable_del('akamai_restapi_default');
 }

@@ -45,10 +45,8 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
       'action'    => variable_get("akamai_action", ""),
       'type'      => "arl",
       'domain'    => variable_get("akamai_domain", ""),
-      'soap_wsdl' => variable_get("akamai_wsdl", ""),
-      'restapi' => variable_get("akamai_restapi", ""),
+      'restapi'   => variable_get("akamai_restapi", ""),
       'email'     => variable_get("akamai_email", ""),
-      'restapi_default'     => variable_get("akamai_restapi_default", ""),
     );
 
     $this->parameters = array_merge($this->defaults, $options);
@@ -91,64 +89,30 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
       $opt[] = "email-notification=$email";
     }
 
-    //use SOAP protocol is Rest API is not default in the settings page
-    if ($restapi_default !== 1) {
-      try {
-        $ccuapi = new SoapClient($soap_wsdl,
-          array(
-            'trace' => 1,
-            'features' => SOAP_USE_XSI_ARRAY_TYPE,
-          )
-        );
+    $data = array("type" => "arl", "action" => "$action", "domain" => "$domain", "objects" => $uris);
+    $data_string = json_encode($data);
+    $data_string = str_replace("\\/", '/', $data_string);
 
-        $response = $ccuapi->purgeRequest($name, $pwd, '', $opt, $uris);
-        $is_success = ($response->resultCode < 300);
-        if (!$is_success) {
-          throw new Exception($response->resultMsg);
-        }
-        foreach ($uris as $uri) {
-          watchdog('Akamai', t("Akamai %action of %uri: %message"),
-            array('%uri' => $uri, '%action' => $action, '%message' => $response->resultMsg), WATCHDOG_NOTICE);
-        }
-        return array(
-          'success' => TRUE,
-          'code' => $response->resultCode,
-          'message' => $response->resultMsg,
-        );
-      }
-      catch (Exception $e) {
-        watchdog('Akamai', t("Error Clearing Akamai Cache: %msg"), array('%msg' => $e->getMessage()));
-        throw $e;
-      }
+    //url needs to be in the format of scheme://user:pass@url
+    $url_parsed = parse_url($restapi);
+    $url = $url_parsed['scheme'] . '://' . $name . ':' . $pwd . '@' . $url_parsed['host'] . $url_parsed['path'];
+    $response = drupal_http_request($url, array(
+        'method' => 'POST',
+        'data' => $data_string,
+        'timeout' => 5,
+        'headers' => array(
+           'Content-Type' => 'application/json',
+           'Content-Length' => strlen($data_string),
+        ),
+      )
+    );
+    $is_success = ($response->code < 300);
+    if (!$is_success) {
+      throw new Exception($response->data);
     }
+    $response_data = json_decode($response->data);
 
-    //if RestAPI is set to default use RestAPI.
-    else {
-      $data = array("type" => "arl", "action" => "$action", "domain" => "$domain", "objects" => $uris);
-      $data_string = json_encode($data);
-      $data_string = str_replace("\\/", '/', $data_string);
-
-      //url needs to be in the format of scheme://user:pass@url
-      $url_parsed = parse_url($restapi);
-      $url = $url_parsed['scheme'] . '://' . $name . ':' . $pwd . '@' . $url_parsed['host'] . $url_parsed['path'];
-      $response = drupal_http_request($url, array(
-          'method' => 'POST',
-          'data' => $data_string,
-          'timeout' => 5,
-          'headers' => array(
-             'Content-Type' => 'application/json',
-             'Content-Length' => strlen($data_string),
-          ),
-        )
-      );
-      $is_success = ($response->code < 300);
-      if (!$is_success) {
-        throw new Exception($response->data);
-      }
-      $response_data = json_decode($response->data);
-
-      watchdog('Akamai', t("Akamai RestAPI %action for %uris: Response: %response"), array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => $response_data->detail), WATCHDOG_NOTICE);
-    }
+    watchdog('Akamai', t("Akamai RestAPI %action for %uris: Response: %response"), array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => $response_data->detail), WATCHDOG_NOTICE);
   }
 }
 
