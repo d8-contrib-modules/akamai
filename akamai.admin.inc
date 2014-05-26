@@ -15,7 +15,7 @@ function akamai_settings() {
   $form['akamai_restapi'] = array(
     '#type'          => 'textfield',
     '#title'         => t('REST API URL'),
-    '#default_value' => variable_get('akamai_restapi', 'https://api.ccu.akamai.com/ques/default'),
+    '#default_value' => variable_get('akamai_restapi', 'https://api.ccu.akamai.com/ccu/v2/queues/default'),
     '#description'   => t('The URL of the Akamai REST API call e.g. "https://api.ccu.akamai.com/ccu/v2/queues/default"')
   );
 
