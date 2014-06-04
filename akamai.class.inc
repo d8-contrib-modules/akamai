@@ -107,12 +107,13 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
       )
     );
     $is_success = ($response->code < 300);
+    $response_data = json_decode($response->data);
     if (!$is_success) {
+      watchdog('Akamai', "Akamai RestAPI failed  %action for %uris with code %code and response: %response", array('%uris' => implode(' ', $uris), '%action' => $action, '%code' => $response->code, '%response' => print_r($response_data, 1)), WATCHDOG_WARNING);
       throw new Exception($response->data);
     }
-    $response_data = json_decode($response->data);
 
-    watchdog('Akamai', t("Akamai RestAPI %action for %uris: Response: %response"), array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => $response_data->detail), WATCHDOG_NOTICE);
+    watchdog('Akamai', "Akamai RestAPI %action for %uris: Response: %response", array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => $response_data->detail), WATCHDOG_NOTICE);
   }
 }
 
