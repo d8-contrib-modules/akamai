@@ -33,10 +33,22 @@ function akamai_settings() {
     '#description'   => t('The user name of the account being used for cache clearing (most likely an email)')
   );
 
-  $form['akamai_password'] = array(
-    '#type'          => 'textfield',
+  if (variable_get('akamai_password', '')) {
+    $password_status_text = t('Akamai CCU Password is set.  Use the fields below to change or leave blank to use the existing password.');
+  }
+  else {
+    $password_status_text = t('Your Akamai CCU Password is not set.  Please set it using the fields below.');
+  }
+
+  $form['password_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Akamai CCU Password',
+    '#description' => $password_status_text,
+  );
+
+  $form['password_fieldset']['akamai_password'] = array(
+    '#type'          => 'password_confirm',
     '#title'         => t('Cache clearing password'),
-    '#default_value' => variable_get('akamai_password', ''),
     '#description'   => t('The password of the cache clearing user')
   );
 
@@ -69,8 +81,20 @@ function akamai_settings() {
     '#description'   => t('If this email address is specified all cache clearing requests will send notifications to this address.  If this address is not specified, the email address of the user executing the request will be used.')
   );
   return system_settings_form($form);
-
 }
+
+/**
+ * Validate the akamai_settings form.
+ *
+ */
+function akamai_settings_validate($form, &$form_state) {
+  // If the password field is not set, remove it from the values array.
+  // This prevents the value from being overwritten with an empty string.
+  if (!$form_state['values']['akamai_password']) {
+    unset($form_state['values']['akamai_password']);
+  }
+}
+
 /**
  * General cache clearing page.
  */
