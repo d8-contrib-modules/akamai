@@ -47,7 +47,7 @@ class AkamaiTestCase extends DrupalWebTestCase {
     $node = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
     $canonical = "node/{$node->nid}";
     $response = akamai_clear_url($canonical, array(), $node);
-    $paths = $response['client']->paths;
+    $paths = !empty($response->client->paths) ? $response->client->paths : array();
 
     $this->assertEqual(1, count($paths), "Only one path cleared");
     $this->assertEqual($canonical, $paths[0], "Correct path was cleared");
@@ -68,7 +68,7 @@ class AkamaiTestCase extends DrupalWebTestCase {
     path_save($alias);
 
     $response = akamai_clear_url($canonical, array(), $node);
-    $paths = $response['client']->paths;
+    $paths = !empty($response->client->paths) ? $response->client->paths : array();
 
     $this->assertEqual(2, count($paths), "Two paths cleared");
     $this->assertEqual($canonical, $paths[0], "Correct canonical path was cleared");
@@ -104,7 +104,7 @@ class AkamaiTestCase extends DrupalWebTestCase {
     path_save($alias);
 
     $response = akamai_clear_url($canonical, array(), $node);
-    $paths = $response['client']->paths;
+    $paths = !empty($response->client->paths) ? $response->client->paths : array();
 
     $this->assertEqual(4, count($paths), "Four paths cleared");
     $this->assertEqual($canonical, $paths[0], "Correct canonical path was cleared");
@@ -156,7 +156,7 @@ class AkamaiHomepageTestCase extends DrupalWebTestCase {
     $this->assertUniqueText(t('[frontpage]'), t('Make sure the text "[frontpage]" appears exactly once on the home page.'));
 
     $response = akamai_clear_url($this->homepage, array(), $this->node);
-    $paths = $response['client']->paths;
+    $paths = !empty($response->client->paths) ? $response->client->paths : array();
 
     $this->assertEqual(2, count($paths), "Two paths cleared");
     $this->assertEqual($this->homepage, $paths[0], "Correct homepage real path was cleared");
@@ -192,7 +192,7 @@ class AkamaiHookTestCase extends DrupalWebTestCase {
     $node = $this->drupalCreateNode(array('type' => 'page', 'promote' => 1));
     $canonical = "node/{$node->nid}";
     $response = akamai_clear_url($canonical, array(), $node);
-    $paths = $response['client']->paths;
+    $paths = !empty($response->client->paths) ? $response->client->paths : array();
 
     $this->assertEqual(2, count($paths), "Two paths cleared");
     $this->assertEqual($canonical, $paths[0], "Correct canonical path was cleared");

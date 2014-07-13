@@ -22,3 +22,10 @@ function akamai_update_7001() {
   variable_del('akamai_wsdl');
   variable_del('akamai_restapi_default');
 }
+
+/**
+ * Remove the email variable not supported in latest API.
+ */
+function akamai_update_7002() {
+  variable_del('akamai_email');
+}

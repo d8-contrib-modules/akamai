@@ -46,7 +46,6 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
       'type'      => "arl",
       'domain'    => variable_get("akamai_domain", ""),
       'restapi'   => variable_get("akamai_restapi", ""),
-      'email'     => variable_get("akamai_email", ""),
     );
 
     $this->parameters = array_merge($this->defaults, $options);
@@ -79,16 +78,6 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
       array_push($uris, $basepath . $path);
     }
 
-    $opt = array(
-      "action=$action",
-      "domain=$domain",
-      "type=$type",
-    );
-
-    if (!empty($email) && $email != AKAMAI_EMAIL_DISABLE) {
-      $opt[] = "email-notification=$email";
-    }
-
     $data = array("type" => "arl", "action" => "$action", "domain" => "$domain", "objects" => $uris);
     $data_string = json_encode($data);
     $data_string = str_replace("\\/", '/', $data_string);
@@ -114,6 +103,8 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
     }
 
     watchdog('Akamai', "Akamai RestAPI %action for %uris: Response: %response", array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => $response_data->detail), WATCHDOG_NOTICE);
+
+    return $response;
   }
 }
 
@@ -142,7 +133,7 @@ class RecordingCacheControlClient implements AkamaiCacheControl {
     }
     $this->paths = $paths;
 
-    return array(
+    return (object) array(
       'success' => TRUE,
       'code' => '',
       'message' => '',

@@ -78,7 +78,7 @@ function akamai_theme() {
  */
 function akamai_node_update($node) {
   $url = base_path() . "node/{$node->nid}";
-  akamai_clear_url($url, array('email' => AKAMAI_EMAIL_DISABLE), $node);
+  akamai_clear_url($url, array(), $node);
 }
 
 /**
@@ -89,7 +89,7 @@ function akamai_node_update($node) {
  */
 function akamai_node_delete($node) {
   $url = base_path() . "node/{$node->nid}";
-  akamai_clear_url($url, array('email' => AKAMAI_EMAIL_DISABLE), $node);
+  akamai_clear_url($url, array(), $node);
 }
 
 /**
@@ -204,15 +204,12 @@ function akamai_clear_url($paths_in, $params = array(), $node = NULL) {
 
   $paths = array_unique($paths);
 
-  // Setup the notification email if an email address is not provided
-  if ( !array_key_exists('email', $params) || empty($params['email'])) {
-    $params['email'] = akamai_get_notification_email();
-  }
-
   try {
     $akamai = akamai_get_class($params);
     $response = $akamai->clear_url($paths);
-    $response['client'] = $akamai;
+    if (is_object($response)) {
+      $response->client = $akamai;
+    }
     return $response;
   }
   catch (Exception $e) {
@@ -264,18 +261,6 @@ function _akamai_get_all_paths($url, $node = NULL) {
   drupal_alter('akamai_paths', $paths, $node);
 
   return $paths;
-}
-
-/**
- * Get the email address for notification.
- */
-function akamai_get_notification_email() {
-  $notification = variable_get('akamai_email', '');
-  if (empty($notification)) {
-    global $user;
-    $notification = $user->mail;
-  }
-  return $notification;
 }
 
 /**
