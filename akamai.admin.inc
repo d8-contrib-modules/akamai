@@ -26,6 +26,16 @@ function akamai_settings() {
     '#description'   => t('The URL of the base path (fully qualified domain name) of the site.  This will be used as a prefix for all cache clears (Akamai indexs on the full URI). e.g. "http://www.example.com"')
   );
 
+  $form['akamai_timeout'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Timeout Length'),
+    '#description'   => t("The timeout used by when sending the cache clear request to Akamai's servers. Most users will not need to change this value."),
+    '#size'          => 5,
+    '#maxlength'     => 3,
+    '#default_value' => variable_get('akamai_timeout', '5'),
+    '#required'      => TRUE,
+  );
+
   $form['akamai_username'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Cache clearing user'),
@@ -86,6 +96,15 @@ function akamai_settings_validate($form, &$form_state) {
   // This prevents the value from being overwritten with an empty string.
   if (!$form_state['values']['akamai_password']) {
     unset($form_state['values']['akamai_password']);
+  }
+
+  // check if timeout value is an integer
+  $filtered_akamai_timeout = filter_var(
+    $form_state['values']['akamai_timeout'],
+    FILTER_VALIDATE_INT,
+    array('options' => array('min_range' => 1)));
+  if (!$filtered_akamai_timeout) {
+    form_set_error('akamai_timeout', 'The Timeout Length must be an integer greater than 0.');
   }
 }
 

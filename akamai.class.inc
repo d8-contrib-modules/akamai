@@ -46,6 +46,7 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
       'type'      => "arl",
       'domain'    => variable_get("akamai_domain", ""),
       'restapi'   => variable_get("akamai_restapi", ""),
+      'timeout'   => variable_get("akamai_timeout", "5"),
     );
 
     $this->parameters = array_merge($this->defaults, $options);
@@ -88,7 +89,7 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
     $response = drupal_http_request($url, array(
         'method' => 'POST',
         'data' => $data_string,
-        'timeout' => 5,
+        'timeout' => $this->defaults['timeout'],
         'headers' => array(
            'Content-Type' => 'application/json',
            'Content-Length' => strlen($data_string),
