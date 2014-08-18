@@ -56,23 +56,20 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
    * Clears the provided URLs from the Akamai Content Cache.
    *
    * @param $paths
-   *    A path (or array of paths) to clear from Akamai
-   * @return
-   *    An array with 2 keys:
-   *       success: TRUE or FALSE indicating cache clearing success
-   *       message: Blank if successful, the error message if not successful.
+   *    A path (or array of paths) to clear from Akamai.
+   * @throws Exception
+   *
+   * @return array
+   *   An array with 2 keys:
+   *   - success: TRUE or FALSE indicating cache clearing success.
+   *   - message: Blank if successful, the error message if not successful.
    */
   function clear_url($paths) {
 
-    // Grab params
+    // Grab params.
     extract($this->parameters);
 
-    // make paths an array
-    if (!is_array($paths)) {
-      $url = array($paths);
-    }
-
-    // prepend base path to paths to make URIs
+    // Prepend base path to paths to make URIs.
     $uris = array();
     foreach ($paths as $path) {
       $path= rtrim(preg_match("/^\//", $path) ? $path : "/$path");
@@ -83,7 +80,7 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
     $data_string = json_encode($data);
     $data_string = str_replace("\\/", '/', $data_string);
 
-    //url needs to be in the format of scheme://user:pass@url
+    // URL needs to be in the format of scheme://user:pass@url.
     $url_parsed = parse_url($restapi);
     $url = $url_parsed['scheme'] . '://' . $name . ':' . $pwd . '@' . $url_parsed['host'] . $url_parsed['path'];
     $response = drupal_http_request($url, array(
@@ -103,7 +100,7 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
       throw new Exception($response->data);
     }
 
-    watchdog('Akamai', "Akamai RestAPI %action for %uris: Response: %response", array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => $response_data->detail), WATCHDOG_NOTICE);
+    watchdog('Akamai', "Akamai RestAPI %action for %uris on %domain: Response: %response", array('%uris' => implode(' ', $uris), '%action' => $action, '%domain' => $domain,'%response' => $response_data->detail), WATCHDOG_NOTICE);
 
     return $response;
   }
