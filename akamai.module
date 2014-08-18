@@ -1,15 +1,15 @@
 <?php
 /**
- * @file akamai.module
- *    Integration with the Akamai CDN Cache Control Web Service.
+ * @file
+ * Integration with the Akamai CDN Cache Control Web Service.
  *
- *    Akamai is a registered trademark of Akamai Technologies, Inc.
+ * Akamai is a registered trademark of Akamai Technologies, Inc.
  */
 
 define("AKAMAI_EMAIL_DISABLE", '#disable#');
 
-/**ll
- * Implementation of hook_perm().
+/**
+ * Implements hook_perm().
  */
 function akamai_permission() {
   return array(
@@ -25,7 +25,7 @@ function akamai_permission() {
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function akamai_menu() {
   $items = array();
@@ -59,7 +59,7 @@ function akamai_menu() {
 }
 
 /**
- * Implementation of hook_theme()
+ * Implements hook_theme()
  */
 function akamai_theme() {
   return array(
@@ -71,7 +71,7 @@ function akamai_theme() {
 }
 
 /**
- * Implementation of hook_node_update().
+ * Implements hook_node_update().
  *
  * When nodes are modified, clear URL from the Akamai
  * cache. Clear base node/% url as well as aliases.
@@ -82,7 +82,7 @@ function akamai_node_update($node) {
 }
 
 /**
- * Implementation of hook_node_delete().
+ * Implements hook_node_delete().
  *
  * When nodes are modified, clear URL from the Akamai
  * cache. Clear base node/% url as well as aliases.
@@ -93,7 +93,7 @@ function akamai_node_delete($node) {
 }
 
 /**
- * Implementation of hook_block_info().
+ * Implements hook_block_info().
  */
 function akamai_block_info() {
   $blocks['akamai'] = array(
@@ -104,7 +104,7 @@ function akamai_block_info() {
 }
 
 /**
- * Implementation of hook_block_view().
+ * Implements hook_block_view().
  */
 function akamai_block_view($delta) {
   if ($delta == 'akamai') {
@@ -118,7 +118,9 @@ function akamai_block_view($delta) {
 }
 
 /**
- * Form for purging the current URL from the Akamai cache.
+ * Form builder for purging the current URL from the Akamai cache.
+ *
+ * @see akamai_block_view()
  */
 function akamai_page_cache_control_form() {
   $form = array();
@@ -156,10 +158,9 @@ function akamai_page_cache_control_form() {
 }
 
 /**
- * Submit handler for akamai_page_cache_control.
+ * Form submission handler for akamai_page_cache_control_form().
  *
  * Purge the 'path' variable from the Akamai cache.
- *
  */
 function akamai_page_cache_control_form_submit($form, &$form_state) {
   $values = $form_state['values'];
@@ -175,13 +176,16 @@ function akamai_page_cache_control_form_submit($form, &$form_state) {
 }
 
 /**
- * Clear a URL from Akamai.  Clears node/id and any url aliases.
+ * Clear a URL from Akamai. Clears node/id and any URL aliases.
  *
- * @param $paths_in
- *    a array of paths or single path to clear
- * @param $params
- *   an array of params for the API call
- * @return
+ * @param array $paths_in
+ *   An array of paths or single path to clear.
+ * @param array $params
+ *   (optional) An array of params for the API call.
+ * @param object $node
+ *   (optional)
+ *
+ * @return bool
  *    TRUE if it was successfully cleared, FALSE otherwise.
  */
 function akamai_clear_url($paths_in, $params = array(), $node = NULL) {
@@ -196,7 +200,7 @@ function akamai_clear_url($paths_in, $params = array(), $node = NULL) {
   }
 
   // It is possible to have no paths at this point if other modules have
-  // altered the paths
+  // altered the paths.
   if (empty($paths)) {
     watchdog('akamai', 'No resultant paths to clear for %paths', array('%paths' => implode(', ', $paths_in)), WATCHDOG_NOTICE);
     return FALSE;
@@ -221,16 +225,17 @@ function akamai_clear_url($paths_in, $params = array(), $node = NULL) {
  * Return all system and alias paths for the provided URL.
  *
  * @param $url
- *    The URL to find all aliases
- * @param $node
- *    The Node for the URL being cleared if one exists, NULL otherwise
- * @return
+ *   The URL to find all aliases
+ * @param object $node
+ *   (optional) The Node for the URL being cleared if one exists, NULL otherwise.
+ *
+ * @return array
  *    An array of all paths aliased to the provided URL.
  */
 function _akamai_get_all_paths($url, $node = NULL) {
   global $language;
 
-  // If it is not a node path, get the system path
+  // If it is not a node path, get the system path.
   if (strpos($url, 'node') !== 0) {
     $source = drupal_lookup_path('source', $url);
   }
@@ -252,20 +257,26 @@ function _akamai_get_all_paths($url, $node = NULL) {
     $paths[] = $record->alias;
   }
 
-  // If this is the frontpage, add a blank to clear the root doc
+  // If this is the frontpage, add a blank to clear the root doc.
   if ($source == variable_get('site_frontpage', 'node')) {
     $paths[] = '';
   }
 
-  // Allow other modules to add/modify paths to be cleared
+  // Allow other modules to add/modify paths to be cleared.
   drupal_alter('akamai_paths', $paths, $node);
 
   return $paths;
 }
 
 /**
- * Returns the Akamai Cache Control class. This is abstracted to provide the capability
+ * Returns the Akamai Cache Control class.
+ *
+ * This is abstracted to provide the capability
  * of a no-op or recording class for testing purposes.
+ *
+ * @param array $params
+ *
+ * @return object
  */
 function akamai_get_class($params = array()) {
   module_load_include('inc', 'akamai', 'akamai.class');
