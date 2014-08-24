@@ -93,14 +93,38 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
         ),
       )
     );
-    $is_success = ($response->code < 300);
-    $response_data = json_decode($response->data);
-    if (!$is_success) {
-      watchdog('Akamai', "Akamai RestAPI failed  %action for %uris with code %code and response: %response", array('%uris' => implode(' ', $uris), '%action' => $action, '%code' => $response->code, '%response' => print_r($response_data, 1)), WATCHDOG_WARNING);
-      throw new Exception($response->data);
+
+    // We expect Akamai to respond with code 201 if the purge request was
+    // successfully created.
+    if ($response->code != 201) {
+      watchdog('Akamai', "Akamai RestAPI failed %action for %uris with code %code and response: %response",
+        array('%uris' => implode(' ', $uris), '%action' => $action, '%code' => $response->code, '%response' => print_r($response, TRUE)),
+        WATCHDOG_WARNING
+      );
+      throw new Exception($response);
     }
 
-    watchdog('Akamai', "Akamai RestAPI %action for %uris on %domain: Response: %response", array('%uris' => implode(' ', $uris), '%action' => $action, '%domain' => $domain,'%response' => $response_data->detail), WATCHDOG_NOTICE);
+    if (empty($response->data)) {
+      watchdog('Akamai', "Received no response data. Akamai RestAPI %action for %uris: Response: %response",
+        array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => print_r($response, TRUE)),
+        WATCHDOG_WARNING
+      );
+      throw new Exception($response);
+    }
+
+    $response_data = json_decode($response->data);
+    if ($response_data === null && json_last_error() !== JSON_ERROR_NONE) {
+      watchdog('Akamai', "Failed to decode JSON data. Akamai RestAPI %action for %uris: Response: %response",
+        array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => print_r($response, TRUE)),
+        WATCHDOG_WARNING
+      );
+      throw new Exception($response);
+    }
+
+    watchdog('Akamai', "Akamai RestAPI %action for %uris: Response: %response",
+      array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => print_r($response_data, TRUE)),
+      WATCHDOG_NOTICE
+    );
 
     return $response;
   }
