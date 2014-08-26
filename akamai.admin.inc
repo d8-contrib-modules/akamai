@@ -16,14 +16,16 @@ function akamai_settings() {
     '#type'          => 'textfield',
     '#title'         => t('REST API URL'),
     '#default_value' => variable_get('akamai_restapi', 'https://api.ccu.akamai.com/ccu/v2/queues/default'),
-    '#description'   => t('The URL of the Akamai REST API call e.g. "https://api.ccu.akamai.com/ccu/v2/queues/default"')
+    '#description'   => t('The URL of the Akamai REST API call e.g. "https://api.ccu.akamai.com/ccu/v2/queues/default"'),
+    '#required'      => TRUE,
   );
 
   $form['akamai_basepath'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Base Path'),
     '#default_value' => variable_get('akamai_basepath', ''),
-    '#description'   => t('The URL of the base path (fully qualified domain name) of the site.  This will be used as a prefix for all cache clears (Akamai indexs on the full URI). e.g. "http://www.example.com"')
+    '#description'   => t('The URL of the base path (fully qualified domain name) of the site.  This will be used as a prefix for all cache clears (Akamai indexs on the full URI). e.g. "http://www.example.com"'),
+    '#required'      => TRUE,
   );
 
   $form['akamai_timeout'] = array(
@@ -40,7 +42,8 @@ function akamai_settings() {
     '#type'          => 'textfield',
     '#title'         => t('Cache clearing user'),
     '#default_value' => variable_get('akamai_username', ''),
-    '#description'   => t('The user name of the account being used for cache clearing (most likely an email)')
+    '#description'   => t('The user name of the account being used for cache clearing (most likely an email)'),
+    '#required'      => TRUE,
   );
 
   if (variable_get('akamai_password', '')) {
@@ -70,7 +73,8 @@ function akamai_settings() {
       'staging'    => t('Staging'),
       'production' => t('Production'),
     ),
-    '#description'   => t('The Akamai domain to use for cache clearing')
+    '#description'   => t('The Akamai domain to use for cache clearing'),
+    '#required'      => TRUE,
   );
 
   $form['akamai_action'] = array(
@@ -81,7 +85,8 @@ function akamai_settings() {
       'remove'     => t('Remove'),
       'invalidate' => t('Invalidate'),
     ),
-    '#description'   => t('The default clearing action.  The options are <em>remove</em> (which removes the item from the Akamai cache) and <em>invalidate</em> (which leaves the item in the cache, but invalidates it so that the origin will be hit on the next request)')
+    '#description'   => t('The default clearing action.  The options are <em>remove</em> (which removes the item from the Akamai cache) and <em>invalidate</em> (which leaves the item in the cache, but invalidates it so that the origin will be hit on the next request)'),
+    '#required'      => TRUE,
   );
 
   return system_settings_form($form);
@@ -92,6 +97,13 @@ function akamai_settings() {
  *
  */
 function akamai_settings_validate($form, &$form_state) {
+  // verify restapi and basepath are valid absolute URLs
+  foreach (array('akamai_basepath' => 'Base Path', 'akamai_restapi' => 'REST API URL') as $field => $field_title) {
+    if (!valid_url($form_state['values'][$field], TRUE)) {
+      form_set_error($field, t("The %field_title value must be a valid, absolute URL", array('%field_title' => $field_title)));
+    }
+  }
+
   // If the password field is not set, remove it from the values array.
   // This prevents the value from being overwritten with an empty string.
   if (!$form_state['values']['akamai_password']) {
