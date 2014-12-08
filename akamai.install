@@ -29,3 +29,16 @@ function akamai_update_7001() {
 function akamai_update_7002() {
   variable_del('akamai_email');
 }
+
+/**
+ * Implements hook_uninstall().
+ */
+function akamai_uninstall() {
+  variable_del('akamai_action');
+  variable_del('akamai_basepath');
+  variable_del('akamai_domain');
+  variable_del('akamai_password');
+  variable_del('akamai_restapi');
+  variable_del('akamai_timeout');
+  variable_del('akamai_username');
+}
