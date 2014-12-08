@@ -214,7 +214,8 @@ function akamai_clear_url($paths_in, $params = array(), $node = NULL) {
     }
     return $response;
   }
-  catch (Exception $e) {
+  catch (AkamaiException $e) {
+    watchdog_exception('akamai', $e);
     return FALSE;
   }
 }

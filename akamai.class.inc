@@ -57,7 +57,7 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
    *
    * @param $paths
    *    A path (or array of paths) to clear from Akamai.
-   * @throws Exception
+   * @throws AkamaiException
    *
    * @return array
    *   An array with 2 keys:
@@ -97,28 +97,38 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
     // We expect Akamai to respond with code 201 if the purge request was
     // successfully created.
     if ($response->code != 201) {
-      watchdog('Akamai', "Akamai RestAPI failed %action for %uris with code %code and response: %response",
-        array('%uris' => implode(' ', $uris), '%action' => $action, '%code' => $response->code, '%response' => print_r($response, TRUE)),
-        WATCHDOG_WARNING
+      $message = format_string('Akamai RestAPI failed !action for !uris with code !code and response: !response',
+        array(
+          '!uris' => implode(' ', $uris),
+          '!action' => $action,
+          '!code' => $response->code,
+          '!response' => var_export($response, TRUE),
+        )
       );
-      throw new Exception($response);
+      throw new AkamaiException($message);
     }
 
     if (empty($response->data)) {
-      watchdog('Akamai', "Received no response data. Akamai RestAPI %action for %uris: Response: %response",
-        array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => print_r($response, TRUE)),
-        WATCHDOG_WARNING
+      $message = format_string('Received no response data. Akamai RestAPI !action for !uris: Response: !response',
+        array(
+          '!uris' => implode(' ', $uris),
+          '!action' => $action,
+          '!response' => var_export($response, TRUE),
+        )
       );
-      throw new Exception($response);
+      throw new AkamaiException($message);
     }
 
     $response_data = json_decode($response->data);
     if ($response_data === null && json_last_error() !== JSON_ERROR_NONE) {
-      watchdog('Akamai', "Failed to decode JSON data. Akamai RestAPI %action for %uris: Response: %response",
-        array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => print_r($response, TRUE)),
-        WATCHDOG_WARNING
+      $message = format_string('Failed to decode JSON data. Akamai RestAPI !action for !uris: Response: !response',
+        array(
+          '!uris' => implode(' ', $uris),
+          '!action' => $action,
+          '!response' => var_export($response, TRUE),
+        )
       );
-      throw new Exception($response);
+      throw new AkamaiException($message);
     }
 
     watchdog('Akamai', "Akamai RestAPI %action for %uris: Response: %response",
@@ -164,7 +174,7 @@ class RecordingCacheControlClient implements AkamaiCacheControl {
 }
 
 /**
- * Implementation of the AkamaiCacheControl interface that throws Exceptions.
+ * Implementation of the AkamaiCacheControl interface that throws AkamaiException.
  * Hint: This is only useful for testing.
  */
 class ErrorCacheControlClient implements AkamaiCacheControl {
@@ -179,6 +189,11 @@ class ErrorCacheControlClient implements AkamaiCacheControl {
    * Records the paths passed in.
    */
   function clear_url($paths) {
-    throw new Exception(t('Akamai Failure Condition Test'));
+    throw new AkamaiException(t('Akamai Failure Condition Test'));
   }
 }
+
+/**
+ * Class AkamaiException.
+ */
+class AkamaiException extends Exception {}
