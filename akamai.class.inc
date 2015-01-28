@@ -131,8 +131,8 @@ class AkamaiCacheControlClient implements AkamaiCacheControl {
       throw new AkamaiException($message);
     }
 
-    watchdog('Akamai', "Akamai RestAPI %action for %uris: Response: %response",
-      array('%uris' => implode(' ', $uris), '%action' => $action, '%response' => print_r($response_data, TRUE)),
+    watchdog('Akamai', "Akamai RestAPI %action for %uris on %domain: Response: %response",
+      array('%uris' => implode(' ', $uris), '%action' => $action, '%domain' => $domain, '%response' => print_r($response_data, TRUE)),
       WATCHDOG_NOTICE
     );
 
