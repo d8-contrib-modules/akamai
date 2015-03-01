@@ -69,6 +69,35 @@ function akamai_theme() {
 }
 
 /**
+ * Implements hook_module_implements_alter().
+ */
+function akamai_module_implements_alter(&$implementations, $hook) {
+  // Move Akamai to run after Acquia Purge since it can grab the stale cache in
+  // certain edge cases, i.e. Akamai purging superfast followed by a request.
+  if ($hook == 'expire_cache' && (isset($implementations['purge']) || isset($implementations['acquia_purge']))) {
+    $group = $implementations['akamai'];
+    unset($implementations['akamai']);
+    $implementations['akamai'] = $group;
+  }
+
+  // Disable the akamai node hooks if expire module is available, since
+  // akamai_expire_cache() will get invoked instead.
+  if (in_array($hook, array('node_update', 'node_delete')) && module_exists('expire')) {
+    unset($implementations['akamai']);
+  }
+}
+
+/**
+ * Implements hook_expire_cache().
+ */
+function akamai_expire_cache($urls, $wildcards, $object_type, $object) {
+  foreach ($urls as $short_url => $full_url) {
+    $url = base_path() . $short_url;
+    akamai_clear_url($url, array(), $object);
+  }
+}
+
+/**
  * Implements hook_node_update().
  *
  * When nodes are modified, clear URL from the Akamai
