@@ -216,6 +216,11 @@ function akamai_page_cache_control_form_submit($form, &$form_state) {
  *    TRUE if it was successfully cleared, FALSE otherwise.
  */
 function akamai_clear_url($paths_in, $params = array(), $node = NULL) {
+  if (variable_get('akamai_disabled', FALSE)) {
+    watchdog('akamai', 'Request to clear paths ignored because clearing is disabled. Check module settings.');
+    return FALSE;
+  }
+
   if (!is_array($paths_in)) {
     $paths_in = array($paths_in);
   }

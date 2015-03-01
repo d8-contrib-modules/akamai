@@ -12,6 +12,18 @@
 function akamai_settings() {
   $form = array();
 
+  $form['disable_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Disable Akamai Cache Clearing',
+    '#description' => 'Set this field to temporarity disable cache clearing during imports, migrations, or other batch processes.',
+  );
+
+  $form['disable_fieldset']['akamai_disabled'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Disable cache clearing'),
+    '#default_value' => variable_get('akamai_disabled', FALSE),
+  );
+
   $form['akamai_restapi'] = array(
     '#type'          => 'textfield',
     '#title'         => t('REST API URL'),

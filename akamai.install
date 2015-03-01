@@ -41,4 +41,5 @@ function akamai_uninstall() {
   variable_del('akamai_restapi');
   variable_del('akamai_timeout');
   variable_del('akamai_username');
+  variable_del('akamai_disabled');
 }
