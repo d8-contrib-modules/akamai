@@ -2,9 +2,6 @@
 # .travis.yml - Drupal for Travis CI Integration
 #
 # Template provided by https://github.com/LionsAd/drupal_ti.
-#
-# Based for simpletest upon:
-#   https://github.com/sonnym/travis-ci-drupal-module-example
 
 language: php
 
@@ -24,8 +21,8 @@ env:
     - PATH="$PATH:$HOME/.composer/vendor/bin"
 
     # Configuration variables.
-    - DRUPAL_TI_MODULE_NAME="[[[FILL THIS OUT]]]"
-    - DRUPAL_TI_SIMPLETEST_GROUP="[[[FILL THIS OUT]]]"
+    - DRUPAL_TI_MODULE_NAME="akamai"
+    - DRUPAL_TI_SIMPLETEST_GROUP="akamai"
 
     # Define runners and environment vars to include before and after the
     # main runners / environment vars.
@@ -33,7 +30,7 @@ env:
     #- DRUPAL_TI_SCRIPT_DIR_AFTER="./drupal_ti/after"
 
     # The environment to use, supported are: drupal-7, drupal-8
-    - DRUPAL_TI_ENVIRONMENT="drupal-7"
+    - DRUPAL_TI_ENVIRONMENT="drupal-8"
 
     # Drupal specific variables.
     - DRUPAL_TI_DB="drupal_travis_db"
@@ -81,7 +78,7 @@ env:
   matrix:
     # [[[ SELECT ANY OR MORE OPTIONS ]]]
     #- DRUPAL_TI_RUNNERS="phpunit"
-    #- DRUPAL_TI_RUNNERS="simpletest"
+    - DRUPAL_TI_RUNNERS="simpletest"
     #- DRUPAL_TI_RUNNERS="behat"
     #- DRUPAL_TI_RUNNERS="phpunit simpletest behat"
     # Use phpunit-core to test modules with phpunit with Drupal 8 core.
