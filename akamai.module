@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Contains akamai.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function akamai_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the akamai module.
+    case 'help.page.akamai':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Cache Control integration with Akamai CDN. Akamai is a registered trademark of Akamai Technologies, Inc.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function akamai_theme() {
+  $theme = [];
+
+  return $theme;
+}
