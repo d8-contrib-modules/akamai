@@ -1,0 +1,5 @@
+akamai.settings:
+  title: 'Akamai'
+  parent: system.admin_config_system
+  description: 'Akamai CDN integration settings.'
+  route_name: akamai.akamai_config_form
