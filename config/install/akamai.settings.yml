@@ -1,0 +1,12 @@
+akamai_disabled: 1
+akamai_restapi_endpoint: https://api.ccu.akamai.com/ccu/v2/queues/default
+akamai_basepath: null
+akamai_timeout: 5
+akamai_username: null
+akamai_password: null
+akamai_domain:
+  - staging
+  - production
+akamai_action:
+  - remove
+  - invalidate
