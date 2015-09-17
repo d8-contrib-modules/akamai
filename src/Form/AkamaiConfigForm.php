@@ -142,8 +142,8 @@ class AkamaiConfigForm extends ConfigFormBase {
       ->set('akamai_timeout', $form_state->getValue('akamai_timeout'))
       ->set('akamai_username', $form_state->getValue('akamai_username'))
       ->set('akamai_password', $form_state->getValue('akamai_password'))
-      ->set('akamai_domain', $form_state->getValue('akamai_password'))
-      ->set('akamai_action', $form_state->getValue('akamai_password'))
+      ->set('akamai_domain', $form_state->getValue('akamai_domain'))
+      ->set('akamai_action', $form_state->getValue('akamai_action'))
       ->save();
 
     drupal_set_message($this->t('Settings saved.'));
