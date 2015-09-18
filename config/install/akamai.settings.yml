@@ -4,9 +4,5 @@ akamai_basepath: null
 akamai_timeout: 5
 akamai_username: null
 akamai_password: null
-akamai_domain:
-  - staging
-  - production
-akamai_action:
-  - remove
-  - invalidate
+akamai_domain: staging
+akamai_action: null
