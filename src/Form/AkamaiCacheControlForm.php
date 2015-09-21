@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains Drupal\akamai\Form\AkamaiConfigForm.
+ * Contains Drupal\akamai\Form\AkamaiCacheControlForm.
  */
 
 namespace Drupal\akamai\Form;
@@ -35,6 +35,7 @@ class AkamaiCacheControlForm extends FormBase {
       '#type' => 'textarea',
       '#title' => $this->t('Paths/URLs'),
       '#description' => $this->t('Enter one URL per line. URL entries should be relative to the basepath. (e.g. node/1, content/pretty-title, sites/default/files/some/image.png'),
+      '#required' => TRUE,
     );
 
     $form['domain_override'] = array(
