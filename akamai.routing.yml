@@ -5,3 +5,10 @@ akamai.akamai_config_form:
     _title: 'Akamai Configuration'
   requirements:
     _permission: 'access administration pages'
+akamai.cache_control_form:
+  path: 'admin/config/akamai/cache-control'
+  defaults:
+    _form: '\Drupal\akamai\Form\AkamaiCacheControlForm'
+    _title: 'Akamai Cache Control'
+  requirements:
+    _permission: 'access administration pages'
