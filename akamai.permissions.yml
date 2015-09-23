@@ -1,0 +1,4 @@
+administer akamai:
+  title: 'Administer Akamai cache settings'
+purge akamai cache:
+  title: 'Use the Akamai manual cache clear form'
