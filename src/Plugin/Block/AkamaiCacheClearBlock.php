@@ -9,6 +9,7 @@ namespace Drupal\akamai\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Access\AccessResult;
 
 /**
  * Provides a block to clear the currently viewed URL.
@@ -35,7 +36,7 @@ class AkamaiCacheClearBlock extends BlockBase {
    * {@inheritdoc}
    */
   public function blockAccess(AccountInterface $account) {
-    return $account->hasPermission('purge akamai cache');
+    return AccessResult::allowedIfHasPermission($account, 'purge akamai cache');
   }
 
 }
