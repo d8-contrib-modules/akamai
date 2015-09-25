@@ -128,6 +128,25 @@ class AkamaiConfigForm extends ConfigFormBase {
       '#required' => TRUE,
     );
 
+    $form['devel_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Development Options'),
+    );
+
+    $form['devel_fieldset']['akamai_devel_mode'] = array(
+      '#type' => 'checkbox',
+      '#title' => $this->t('Use development mode'),
+      '#default_value' => $config->get('akamai_devel_mode'),
+      '#description' => $this->t('Use the a Mock API instead of a live one.'),
+    );
+
+    $form['devel_fieldset']['akamai_mock_endpoint'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Mock endpoint URI'),
+      '#default_value' => $config->get('akamai_mock_endpoint'),
+      '#description' => $this->t('Mock endpoint used in development mode'),
+    );
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -144,6 +163,8 @@ class AkamaiConfigForm extends ConfigFormBase {
       ->set('akamai_password', $form_state->getValue('akamai_password'))
       ->set('akamai_domain', $form_state->getValue('akamai_domain'))
       ->set('akamai_action', $form_state->getValue('akamai_action'))
+      ->set('akamai_devel_mode', $form_state->getValue('akamai_devel_mode'))
+      ->set('akamai_mock_endpoint', $form_state->getValue('akamai_devel_mode'))
       ->save();
 
     drupal_set_message($this->t('Settings saved.'));
