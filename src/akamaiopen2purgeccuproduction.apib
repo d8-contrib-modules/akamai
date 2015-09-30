@@ -1,0 +1,213 @@
+FORMAT: 1A
+
+# Content Control Utility v2
+
+# Group Request Queues
+## /ccu/v2/queues/{queueName}
++ Parameters 
+    + queueName (string, required)... Name of the queue. Currently supported options are _default_ and _emergency_.
+
+### Get current queue size [GET]
+Retrieves the length of the queue length.
+
++ Response 200 (application/json)
+
+        {
+           "supportId": "17QY1405953107052757-292938848", 
+           "httpStatus": 200, 
+           "detail": "The queue may take a minute to reflect new or removed requests.", 
+           "queueLength": 4
+        }
+
+
+### Add a request [POST]
+Requests that the given objects (URLs, ARLs, or CPCodes) are purged.  
+
+On success, returns a 201 status and a response including 
+the progressUri that can be used to retrieve the 
+status of the request (see below).
+
+*Note*: always check for the 201 status to confirm the request was successfully received.
+
+The CCU API responds with standard 
+[HTTP response codes](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html).
+Below are some of the most common response codes, though other standard codes may also be returned.
+
+
+|Code | Meaning | Suggestion |
+|-----|-------|-------------|
+|201 | Purge request was successfully received| |
+|400 | Bad request| Often a malformed purge request json |
+|403 | Forbidden  | Check the authorizations for the client and the objects being purged |
+|415 | Bad media type | Typically a missing header  `Content-Type: application/json`|
+|507 | Over queue limit | Wait at least a few minutes to try again|
+
+
+The following table lists the properties of the JSON request 
+
+|Name|Description| Details|
+|----|----|-----|
+|objects|List of URLs, ARLs, or CPCodes|required list of string or int|
+|action|The action to take, either "remove" (default) or "invalidate"|optional, string|
+|domain|The domain, either "production (default) or "staging"|optional, string|
+|type|The type of the objects, either "arl" (default) or "cpcode"|optional, string|
+
+
+For the `action` field, `remove` deletes the content from Edge server caches. 
+The next time an Edge server receives a request for the content, 
+it will retrieve the current version from the origin server. 
+If it cannot retrieve a current version, it will follow instructions in your server configuration. 
+`invalidate` marks the cached content as invalid. 
+The next time a server receives a request for the content, 
+it sends an HTTP conditional GET (If-Modified-Since) request to the origin. 
+If the content has changed, the origin server returns a full fresh copy.
+Otherwise, the origin normally responds that the content has not changed, and the Edge server can serve the already-cached content.
+
+
+
++ Request (application/json)
+
+        {  
+            "objects" : [
+                "/f/4/6848/4h/www.foofoofoo.com/index.php",
+                "/f/4/6848/4h/www.oofoofoof.com/index2.php",
+                "http://www.example.com/graphics/picture.gif",
+                "http://www.example.com/documents/brochure.pdf"
+            ],
+            "action": "remove",
+            "type": "arl",
+            "domain": "production"
+        }
+
++ Response 201 (application/json)
+
+        {
+         "estimatedSeconds": 420, 
+         "progressUri": "/ccu/v2/purges/57799d8b-10e4-11e4-9088-62ece60caaf0", 
+         "purgeId": "57799d8b-10e4-11e4-9088-62ece60caaf0", 
+         "supportId": "17PY1405953363409286-284546144", 
+         "httpStatus": 201, 
+         "detail": "Request accepted.", 
+         "pingAfterSeconds": 420
+        }
+        
+        
++ Request (application/json)
+
+        {  
+            "objects" : [
+                "http://mydomain/file09999.txt",
+                "http://mydomain/file10000.txt",
+                "http://mydomain/file10001.txt"
+            ],
+            "action": "remove",
+            "type": "arl",
+            "domain": "production"
+        }
+
++ Response 507 (application/json) 
+
+        { 
+            "supportId": "17PY1405953590785649-285344864", 
+            "title": "queue is full", 
+            "httpStatus": 507, 
+            "detail": "User's queue is full", 
+            "describedBy": "https://api.ccu.akamai.com/ccu/v2/errors/queue-is-full"
+        }
+    
++ Request (application/json)
+
+        {  
+            "objects" : ["http://some-url-that-is-not-mine/index.html"],
+            "action": "remove",
+            "type": "arl",
+            "domain": "production"
+        }   
+       
++ Response 403 (application/json) 
+
+        {
+            "supportId: "17PY1405953590785649-285344864", 
+            "title": "unauthorized arl", 
+            "httpStatus": 403, 
+            "detail": "http://some-url-that-is-not-mine/index.html", 
+            "describedBy': "https://api.ccu.akamai.com/ccu/v2/errors/unauthorized-arl"
+        }
+
++ Request (application/json)
+
+        {  
+            "objects" : [ ],
+            "action": "remove",
+            "type": "arl",
+            "domain": "production"
+        }
+        
++ Response 400 (application/json)
+
+        {
+         "supportId": "17PY1405953590785649-285344864", 
+         "title": "invalid attribute value", 
+         "httpStatus": 400, 
+         "detail": "Required attribute 'objects' must include at least one object to purge", 
+         "describedBy": "https://api.ccu.akamai.com/ccu/v2/errors/invalid-attribute-value"
+        }
+
++ Request 
+    + Headers
+    
+            Content-Type: text/plain
+
+    + Body
+    
+            "{'objects' : ['/f/4/6848/4h/www.foofoofoo.com/index.php']}"
+
++ Response 415 (application/json)
+
+        {
+            "title": "unsupported media type", 
+            "httpStatus": 415, "detail": 
+            "Expected an entity of content type application/json, text/javascript", 
+            "describedBy": "https://api.ccu.akamai.com/ccu/v2/errors/unsupported-media-type"
+        }
+
+
+# Group Purge Status
+## /ccu/v2/purges/{purgeId}
+The status of a previously submitted request.  This path should be retrieved
+from the `progressUri` field of the response to a purge request (See above).
+
++ Parameters
+    + purgeId (string) ... The purgeId returned from the POST to the queue.
+
+### Retrieve the status [GET]
+Get the status of a purge request
+
+The following table describes the fields of the response JSON
+
+|Name|Description|Details|
+|-----|-----|-----|
+|httpStatus|The http status code|integer|
+|purgeStatus|The status of the request. Either "In-Progress" or "Done".|string|
+|completionTime|The approximate time that the request was completed or None if not yet complete|date or None|
+|supportId|Reference for this status request provided to CCare if needed|string|
+|purgeId|The unique ID for the purge request|string|
+|submissionTime|The approximate time the request was submitted|date|
+|submittedBy|Identifies the submitter of the purge request|string|
+|originalEstimatedSeconds|Time in seconds originally estimated|integer|
+|originalQueueLength|The approximate queue length at the time of the submission|integer|
+
++ Response 200 (application/json)
+
+        {
+            "originalEstimatedSeconds": 420, 
+            "originalQueueLength": 0, 
+            "supportId": "17SY1405954814899441-292938848", 
+            "httpStatus": 200, 
+            "purgeId": "57799d8b-10e4-11e4-9088-62ece60caaf0", 
+            "completionTime": "2014-07-21T14:42:18Z", 
+            "submittedBy": "client_name", 
+            "purgeStatus": "In-Progress", 
+            "submissionTime": "2014-07-21T14:39:30Z"
+        }
+        
