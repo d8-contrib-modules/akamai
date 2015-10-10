@@ -1,0 +1,3 @@
+services:
+  akamai.akamaiservice:
+    class: Drupal\akamai\AkamaiContentControlClient
