@@ -72,6 +72,15 @@ class AkamaiCacheControlForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $akamai = \Drupal::service('akamai.akamaiservice');
+    global $base_url;
+
+    foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
+      $akamai->clearUrl($path);
+      //drupal_set_message('Going to clear ' . $base_url . '/' . $path);
+    }
+
+
     drupal_set_message($this->t('Interact with Akamai API.'));
   }
 
