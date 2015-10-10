@@ -10,9 +10,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Class AkamaiConfigForm
- *
- * @package Drupal\akamai\Form
+ * A configuration form to interact with Akamai API settings.
  */
 class AkamaiConfigForm extends ConfigFormBase {
 
