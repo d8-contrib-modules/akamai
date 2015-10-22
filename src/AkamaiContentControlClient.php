@@ -11,6 +11,8 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Log\LoggerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+
 
 /**
  * Provides a service to interact with the Akamai Content Control REST API.
@@ -27,25 +29,31 @@ class AkamaiContentControlClient implements AkamaiContentControlInterface {
   /**
    * A logger instance.
    *
-   * @var \Psr\Log\LoggerInterface
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
    */
   protected $logger;
 
-  // A config object.
+  /**
+   * The akamai.settings config object.
+   *
+   * @var \Drupal\Core\Config\Config;
+   */
   protected $config;
 
   /**
    * Constructs an AkamaiContentControlClient object.
    *
-   * @todo Inject logger
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   A config factory.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   A logger instance.
+   *
    * @todo Inject HTTPClient
-   * @todo Inject config
    */
-  public function __construct() {
-    // @todo Inject the services.
+  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger) {
+    $this->config = $config_factory->get('akamai.settings');
+    $this->logger = $logger;
     $this->httpClient = \Drupal::httpClient();
-    $this->logger = \Drupal::logger('akamai');
-    $this->config = \Drupal::config('akamai.settings');
   }
 
   /**
