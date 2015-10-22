@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Provides a service to interact with the Akamai Content Control REST API.
  */
-class AkamaiContentControlClient implements AkamaiContentControl {
+class AkamaiContentControlClient implements AkamaiContentControlInterface {
 
   /**
    * The HTTP client to fetch the feed data with.
