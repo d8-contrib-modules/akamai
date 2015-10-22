@@ -162,7 +162,7 @@ class AkamaiConfigForm extends ConfigFormBase {
       ->set('akamai_domain', $form_state->getValue('akamai_domain'))
       ->set('akamai_action', $form_state->getValue('akamai_action'))
       ->set('akamai_devel_mode', $form_state->getValue('akamai_devel_mode'))
-      ->set('akamai_mock_endpoint', $form_state->getValue('akamai_devel_mode'))
+      ->set('akamai_mock_endpoint', $form_state->getValue('akamai_mock_endpoint'))
       ->save();
 
     drupal_set_message($this->t('Settings saved.'));
