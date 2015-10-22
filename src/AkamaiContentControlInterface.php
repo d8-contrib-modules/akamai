@@ -13,15 +13,7 @@ namespace Drupal\akamai;
 interface AkamaiContentControlInterface {
 
   /**
-   * Purges a list of URLs from the edge cache.
-   *
-   * @param array $urls
-   *   A list of one or more URLs to purge.
-   */
-  public function clearUrls(array $urls);
-
-  /**
-   * Purges a single URL from the edge cache.
+   * Purges a URL or list of URLs from the edge cache.
    *
    * @param string $url
    *   A single URL.

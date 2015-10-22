@@ -51,19 +51,8 @@ class AkamaiContentControlClient implements AkamaiContentControlInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearUrls(array $urls) {
-    foreach ($urls as $url) {
-      drupal_set_message($url);
-      $this->purgeUrl($url);
-      // $this->logger->info('Cleared URL {url}', array('url' => $url));
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function clearUrl($url) {
-    $this->clearUrls(array($url));
+    $this->purgeUrl($url);
   }
 
   /**
@@ -75,7 +64,6 @@ class AkamaiContentControlClient implements AkamaiContentControlInterface {
    * @todo Incorporate invalidation as well as removing objects.
    */
   protected function purgeUrl($url) {
-
     // Set up parameters for the request. Note, arl requests define cache
     // objects by URL.
     $parameters = array(
