@@ -75,8 +75,11 @@ class AkamaiContentControlClient implements AkamaiContentControlInterface {
       ),
     );
 
+    // Use the devel endpoint if enabled.
+    $endpoint = $this->config->get('akamai_devel_mode') ? $this->config->get('akamai_mock_endpoint') : $this->config->get('akamai_restapi_endpoint');
+
     $request = new Request('POST',
-      $this->config->get('akamai_restapi_endpoint'),
+      $endpoint,
       $parameters
     );
 
