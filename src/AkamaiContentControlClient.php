@@ -92,13 +92,12 @@ class AkamaiContentControlClient implements AkamaiContentControlInterface {
     );
 
     try {
-      $response = $this->httpClient->send($request);
+     $response = $this->httpClient->send($request);
     }
     catch (RequestException $e) {
       // @todo Log/notify these more cleanly.
-      drupal_set_message(t('There was an error calling the Akamai CCU service.'), 'error');
-      drupal_set_message($e->getRequest(), 'error');
-      drupal_set_message($e->getResponse(), 'error');
+      $this->logger->error('There was a problem calling the Akamai CCU service.');
+      $this->logger->error($e->getResponse());
       return;
     }
 
