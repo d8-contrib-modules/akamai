@@ -11,9 +11,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Class AkamaiCacheControlForm
- *
- * @package Drupal\akamai\Form
+ * A simple form for testing the Akamai integration, or doing manual clears.
  */
 class AkamaiCacheControlForm extends FormBase {
 
@@ -46,7 +44,7 @@ class AkamaiCacheControlForm extends FormBase {
         'staging' => $this->t('Staging'),
         'production' => $this->t('Production'),
       ),
-      '#description' => $this->t('The Akamai domain to use for cache clearing.  Defaults to the Domain setting from the settings page.')
+      '#description' => $this->t('The Akamai domain to use for cache clearing.  Defaults to the Domain setting from the settings page.'),
     );
 
     $form['refresh'] = array(
@@ -72,6 +70,14 @@ class AkamaiCacheControlForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $akamai = \Drupal::service('akamai.akamaiservice');
+    global $base_url;
+
+    foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
+      $akamai->clearUrl($path);
+      // drupal_set_message('Going to clear ' . $base_url . '/' . $path);
+    }
+
     drupal_set_message($this->t('Interact with Akamai API.'));
   }
 

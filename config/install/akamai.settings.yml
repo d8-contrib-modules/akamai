@@ -5,4 +5,6 @@ akamai_timeout: 5
 akamai_username: null
 akamai_password: null
 akamai_domain: staging
-akamai_action: null
+akamai_action: invalidate
+akamai_devel_mode: false
+akamai_mock_endpoint: http://private-250a0-akamaiopen2purgeccuproduction.apiary-mock.com/ccu/v2/queues/default
