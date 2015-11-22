@@ -23,11 +23,13 @@ use Drupal\purge\Plugin\Purge\Purger\PurgerInterface;
  * )
  */
 class AkamaiPurger extends PurgerBase implements PurgerInterface {
+
   /**
    * @inheritDoc
    */
   public function getTimeHint() {
-    // @todo: Implement getTimeHint() method.
+    // @todo Create a configurable max timeout.
+    return 4.00;
   }
 
   /**
