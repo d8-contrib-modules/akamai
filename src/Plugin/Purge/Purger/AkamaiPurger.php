@@ -8,6 +8,7 @@
 namespace Drupal\akamai\Plugin\Purge\Purger;
 
 
+
 use Drupal\purge\Plugin\Purge\Purger\PurgerBase;
 use Drupal\purge\Plugin\Purge\Purger\PurgerInterface;
 
@@ -18,8 +19,7 @@ use Drupal\purge\Plugin\Purge\Purger\PurgerInterface;
  *   id = "akamai",
  *   label = @Translation("Akamai Purger"),
  *   description = @Translation("Provides a Purge service for Akamai CCU."),
- *   enable_by_default = false,
- *   configform = "",
+ *   configform = "Drupal\akamai\Form\AkamaiConfigForm",
  * )
  */
 class AkamaiPurger extends PurgerBase implements PurgerInterface {
