@@ -7,8 +7,6 @@
 
 namespace Drupal\akamai\Plugin\Purge\Purger;
 
-
-
 use Drupal\purge\Plugin\Purge\Purger\PurgerBase;
 use Drupal\purge\Plugin\Purge\Purger\PurgerInterface;
 
