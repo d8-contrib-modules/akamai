@@ -27,6 +27,14 @@ class AkamaiClient extends Client {
 
 
   /**
+   * Base url to which API method names are appended.
+   *
+   * @var string
+   */
+  protected $api_base_url = '/ccu/v2/';
+
+
+  /**
    * AkamaiAuthentication constructor.
    *
    * @param \Drupal\Core\Config\Config $config
@@ -69,6 +77,51 @@ class AkamaiClient extends Client {
 
     return $this->akamai_client_config;
   }
+
+
+  /**
+   * Purges a single URL object.
+   *
+   * @param string $url
+   *   A URL to clear.
+   */
+  protected function purgeUrl($url) {
+    $this->purgeRequest(array($url));
+  }
+
+
+  /**
+   * Ask the API to purge an object.
+   *
+   * @param array $objects
+   *   A non-associative array of Akamai objects to clear.
+   *
+   * @return \Psr\Http\Message\ResponseInterface
+   *    Response to purge request.
+   *
+   * @link https://developer.akamai.com/api/purge/ccu/reference.html
+   * @link https://github.com/akamai-open/api-kickstart/blob/master/examples/php/ccu.php#L58
+   */
+  protected function purgeRequest($objects, $queue = 'default') {
+    // Note that other parameters are defaulted:
+    // action: remove (default), invalidated
+    // domain: production (default), staging
+    // type: arl (default), cpcode
+    $response = $this->post(
+      $this->api_base_url . '/queues/' . $queue,
+      [
+        'body' => json_encode($objects),
+        'headers' => ['Content Type' => 'application/json'],
+      ]
+    );
+
+    return $response;
+  }
+
+
+
+
+  // @todo Create diagnostic check classes to consume these.
 
   /**
    * Get a queue to check its status.
