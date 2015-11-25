@@ -53,7 +53,7 @@ class AkamaiContentControlClient implements AkamaiContentControlInterface {
   public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger) {
     $this->config = $config_factory->get('akamai.settings');
     $this->logger = $logger;
-    $this->httpClient = \Drupal::httpClient();
+    $this->httpClient = new AkamaiAuthentication($this->config);
   }
 
   /**
