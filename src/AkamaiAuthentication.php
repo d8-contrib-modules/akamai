@@ -3,7 +3,7 @@
 
 namespace Drupal\akamai;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\Config;
 use Akamai\Open\EdgeGrid\Authentication;
 
 /**
@@ -22,7 +22,7 @@ class AkamaiAuthentication extends Authentication {
    * @param \Drupal\Core\Config\Config $config
    *   A config object, containing client authentication details.
    */
-  public function __construct(ConfigFactoryInterface $config) {
+  public function __construct(Config $config) {
 
     // Set the auth credentials up.
     // @see Authentication::createFromEdgeRcFile()
@@ -35,7 +35,7 @@ class AkamaiAuthentication extends Authentication {
     // Set the upstream API host.
 
     // @todo Maybe make the devel mode check a library function?
-    if ($this->config->get('akamai_devel_mode') == TRUE) {
+    if ($config->get('akamai_devel_mode') == TRUE) {
       $this->setHost($config->get('akamai_mock_endpoint'));
     }
 

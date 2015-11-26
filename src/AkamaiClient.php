@@ -3,7 +3,7 @@
 
 namespace Drupal\akamai;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\Config;
 use Akamai\Open\EdgeGrid\Client;
 
 /**
@@ -40,7 +40,7 @@ class AkamaiClient extends Client {
    * @param \Drupal\Core\Config\Config $config
    *   A config object, containing client authentication details.
    */
-  public function __construct(ConfigFactoryInterface $config) {
+  public function __construct(Config $config) {
 
     $this->config = $config;
 
@@ -72,6 +72,7 @@ class AkamaiClient extends Client {
     if ($this->config->get('akamai_devel_mode') == TRUE) {
       $this->akamai_client_config['base_uri'] = $this->config->get('akamai_mock_endpoint');
     }
+    // @todo Add real API endpoint config
 
     $this->akamai_client_config['timeout'] = $this->config->get('akamai_timeout');
 
