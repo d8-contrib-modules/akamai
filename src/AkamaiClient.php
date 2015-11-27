@@ -1,10 +1,10 @@
 <?php
 
-
 namespace Drupal\akamai;
 
 use Drupal\Core\Config\Config;
 use Akamai\Open\EdgeGrid\Client;
+use Drupal\akamai\AkamaiAuthentication;
 
 /**
  * Connects to the Akamai EdgeGrid.
@@ -23,40 +23,37 @@ class AkamaiClient extends Client {
    *
    * @var array
    */
-  protected $akamai_client_config;
-
+  protected $akamaiClientConfig;
 
   /**
    * Base url to which API method names are appended.
    *
    * @var string
    */
-  protected $api_base_url = '/ccu/v2/';
-
+  protected $apiBaseUrl = '/ccu/v2/';
 
   /**
-   * AkamaiAuthentication constructor.
+   * Factory method to create instances of the Client based on Drupal config.
    *
    * @param \Drupal\Core\Config\Config $config
-   *   A config object, containing client authentication details.
+   *   A Drupal config object containing Akamai settings and credentials.
+   *
+   * @return \Drupal\akamai\AkamaiClient
+   *   A web services client, ready for use.
    */
-  public function __construct(Config $config) {
+  public static function create(Config $config) {
+    // If we are in devel mode, use the mocked endpoint.
+    if ($config->get('akamai_devel_mode') == TRUE) {
+      $akamai_client_config['base_uri'] = $config->get('akamai_mock_endpoint');
+    }
+    // @todo Add real API endpoint config
+    $akamai_client_config['timeout'] = $config->get('akamai_timeout');
 
-    $this->config = $config;
-
-    $this->akamai_client_config = array();
-    $this->createClientConfig();
-
-    $authentication = new AkamaiAuthentication($config);
-
+    $auth = AkamaiAuthentication::create($config);
     // @see Client::createFromEdgeRcFile()
-    $this->setAuth(
-      $config->get('client_token'),
-      $config->get('client_secret'),
-      $config->get('access_token')
-    );
+    $client = new static($akamai_client_config, $auth);
 
-    parent::__construct($this->akamai_client_config, $authentication);
+    return $client;
   }
 
   /**
@@ -68,15 +65,17 @@ class AkamaiClient extends Client {
    * @see Akamai\Open\EdgeGrid\Client::setBasicOptions
    */
   protected function createClientConfig() {
+    // @note this functionality has been moved to create().
+    // @todo do we need to keep the config in akamai format arbitrarily?
     // If we are in devel mode, use the mocked endpoint.
     if ($this->config->get('akamai_devel_mode') == TRUE) {
-      $this->akamai_client_config['base_uri'] = $this->config->get('akamai_mock_endpoint');
+      $this->akamaiClientConfig['base_uri'] = $this->config->get('akamai_mock_endpoint');
     }
     // @todo Add real API endpoint config
 
-    $this->akamai_client_config['timeout'] = $this->config->get('akamai_timeout');
+    $this->akamaiClientConfig['timeout'] = $this->config->get('akamai_timeout');
 
-    return $this->akamai_client_config;
+    return $this->akamaiClientConfig;
   }
 
 
@@ -109,7 +108,7 @@ class AkamaiClient extends Client {
     // domain: production (default), staging
     // type: arl (default), cpcode
     $response = $this->post(
-      $this->api_base_url . '/queues/' . $queue,
+      $this->apiBaseUrl . '/queues/' . $queue,
       [
         'body' => json_encode($objects),
         'headers' => ['Content Type' => 'application/json'],

@@ -17,16 +17,19 @@ use Akamai\Open\EdgeGrid\Authentication;
 class AkamaiAuthentication extends Authentication {
 
   /**
-   * AkamaiAuthentication constructor.
+   * AkamaiAuthentication factory method, following superclass patterns.
    *
    * @param \Drupal\Core\Config\Config $config
    *   A config object, containing client authentication details.
    */
-  public function __construct(Config $config) {
+  public static function create(Config $config) {
+
+    // Following the pattern in the superclass.
+    $auth = new static();
 
     // Set the auth credentials up.
     // @see Authentication::createFromEdgeRcFile()
-    $this->setAuth(
+    $auth->setAuth(
       $config->get('client_token'),
       $config->get('client_secret'),
       $config->get('access_token')
@@ -36,9 +39,10 @@ class AkamaiAuthentication extends Authentication {
 
     // @todo Maybe make the devel mode check a library function?
     if ($config->get('akamai_devel_mode') == TRUE) {
-      $this->setHost($config->get('akamai_mock_endpoint'));
+      $auth->setHost($config->get('akamai_mock_endpoint'));
     }
 
+    return $auth;
   }
 
 }
