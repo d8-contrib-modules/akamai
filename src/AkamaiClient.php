@@ -42,6 +42,7 @@ class AkamaiClient extends Client {
    *   A web services client, ready for use.
    */
   public static function create(Config $config) {
+    $akamai_client_config = array();
     // If we are in devel mode, use the mocked endpoint.
     if ($config->get('akamai_devel_mode') == TRUE) {
       $akamai_client_config['base_uri'] = $config->get('akamai_mock_endpoint');
@@ -49,9 +50,16 @@ class AkamaiClient extends Client {
     // @todo Add real API endpoint config
     $akamai_client_config['timeout'] = $config->get('akamai_timeout');
 
-    $auth = AkamaiAuthentication::create($config);
+    // $auth = AkamaiAuthentication::create($config);
     // @see Client::createFromEdgeRcFile()
-    $client = new static($akamai_client_config, $auth);
+    $client = new static($akamai_client_config);
+    // Set the auth credentials up.
+    // @see Authentication::createFromEdgeRcFile()
+    $client->setAuth(
+      $config->get('client_token'),
+      $config->get('client_secret'),
+      $config->get('access_token')
+    );
 
     return $client;
   }

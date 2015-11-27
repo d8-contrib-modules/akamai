@@ -21,6 +21,9 @@ class AkamaiAuthentication extends Authentication {
    *
    * @param \Drupal\Core\Config\Config $config
    *   A config object, containing client authentication details.
+   *
+   * @return \Drupal\akamai\AkamaiAuthentication
+   *   An authentication object.
    */
   public static function create(Config $config) {
 
@@ -34,8 +37,6 @@ class AkamaiAuthentication extends Authentication {
       $config->get('client_secret'),
       $config->get('access_token')
     );
-
-    // Set the upstream API host.
 
     // @todo Maybe make the devel mode check a library function?
     if ($config->get('akamai_devel_mode') == TRUE) {
