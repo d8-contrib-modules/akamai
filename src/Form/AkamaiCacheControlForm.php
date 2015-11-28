@@ -9,6 +9,7 @@ namespace Drupal\akamai\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\akamai\AkamaiClient;
 
 /**
  * A simple form for testing the Akamai integration, or doing manual clears.
@@ -70,15 +71,12 @@ class AkamaiCacheControlForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $akamai = \Drupal::service('akamai.akamaiservice');
-    global $base_url;
+    //$akamai = \Drupal::service('akamai.akamaiservice');
+    $akamai = AkamaiClient::create($this->config('akamai.settings'));
 
     foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
-      $akamai->clearUrl($path);
-      // drupal_set_message('Going to clear ' . $base_url . '/' . $path);
+      $akamai->purgeUrl($path);
     }
-
-    drupal_set_message($this->t('Interact with Akamai API.'));
   }
 
 }

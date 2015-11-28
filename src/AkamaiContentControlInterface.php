@@ -18,6 +18,6 @@ interface AkamaiContentControlInterface {
    * @param string $url
    *   A single URL.
    */
-  public function clearUrl($url);
+  public function purgeUrl($url);
 
 }

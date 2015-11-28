@@ -53,15 +53,9 @@ class AkamaiContentControlClient implements AkamaiContentControlInterface {
   public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger) {
     $this->config = $config_factory->get('akamai.settings');
     $this->logger = $logger;
-    $this->httpClient = new AkamaiAuthentication($this->config);
+    $this->httpClient = AkamaiClient::create($this->config);
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function clearUrl($url) {
-    $this->purgeUrl($url);
-  }
 
   /**
    * Removes an object, based on URL path, from the Akamai cache.
@@ -71,36 +65,8 @@ class AkamaiContentControlClient implements AkamaiContentControlInterface {
    *
    * @todo Incorporate invalidation as well as removing objects.
    */
-  protected function purgeUrl($url) {
-    // Set up parameters for the request. Note, arl requests define cache
-    // objects by URL.
-    $parameters = array(
-      'type' => 'arl',
-      'action' => 'remove',
-      'domain' => $this->config->get('akamai_domain'),
-      'objects' => array(
-        $url,
-      ),
-    );
-
-    // Use the devel endpoint if enabled.
-    $endpoint = $this->config->get('akamai_devel_mode') ? $this->config->get('akamai_mock_endpoint') : $this->config->get('akamai_restapi_endpoint');
-
-    $request = new Request('POST',
-      $endpoint,
-      $parameters
-    );
-
-    try {
-     $response = $this->httpClient->send($request);
-    }
-    catch (RequestException $e) {
-      // @todo Log/notify these more cleanly.
-      $this->logger->error('There was a problem calling the Akamai CCU service.');
-      $this->logger->error($e->getResponse());
-      return;
-    }
-
+  public function purgeUrl($url) {
+    $this->httpClient->purgeUrl($url);
   }
 
 }
