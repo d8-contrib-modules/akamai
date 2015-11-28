@@ -44,7 +44,7 @@ class AkamaiConfigForm extends ConfigFormBase {
       '#description' => $this->t('Set this field to temporarity disable cache clearing during imports, migrations, or other batch processes.'),
     );
 
-    $form['disable_fieldset']['akamai_disabled'] = array(
+    $form['disable_fieldset']['disabled'] = array(
       '#type' => 'checkbox',
       '#title' => $this->t('Disable cache clearing'),
       '#default_value' => $config->get('akamai_disable'),
@@ -57,21 +57,21 @@ class AkamaiConfigForm extends ConfigFormBase {
       '#default_value' => $config->get('akamai_restapi_endpoint'),
     );
 
-    $form['akamai_basepath'] = array(
+    $form['basepath'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Base Path'),
-      '#default_value' => $config->get('akamai_basepath'),
+      '#default_value' => $config->get('basepath'),
       '#description' => $this->t('The URL of the base path (fully qualified domain name) of the site.  This will be used as a prefix for all cache clears (Akamai indexs on the full URI). e.g. "http://www.example.com"'),
       '#required' => TRUE,
     );
 
-    $form['akamai_timeout'] = array(
+    $form['timeout'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Timeout Length'),
       '#description' => $this->t("The timeout used by when sending the cache clear request to Akamai's servers. Most users will not need to change this value."),
       '#size' => 5,
       '#maxlength' => 3,
-      '#default_value' => $config->get('akamai_timeout'),
+      '#default_value' => $config->get('timeout'),
       '#required' => TRUE,
     );
 
@@ -102,10 +102,10 @@ class AkamaiConfigForm extends ConfigFormBase {
       '#description' => $this->t('The password of the cache clearing user'),
     );
 
-    $form['akamai_domain'] = array(
+    $form['domain'] = array(
       '#type' => 'select',
       '#title' => $this->t('Domain'),
-      '#default_value' => $config->get('akamai_domain'),
+      '#default_value' => $config->get('domain'),
       '#options' => array(
         'staging' => $this->t('Staging'),
         'production' => $this->t('Production'),
@@ -114,10 +114,10 @@ class AkamaiConfigForm extends ConfigFormBase {
       '#required' => TRUE,
     );
 
-    $form['akamai_action'] = array(
+    $form['action'] = array(
       '#type' => 'select',
       '#title' => $this->t('Clearing Action Type Default'),
-      '#default_value' => $config->get('akamai_action'),
+      '#default_value' => $config->get('action'),
       '#options' => array(
         'remove' => $this->t('Remove'),
         'invalidate' => $this->t('Invalidate'),
@@ -131,17 +131,17 @@ class AkamaiConfigForm extends ConfigFormBase {
       '#title' => t('Development Options'),
     );
 
-    $form['devel_fieldset']['akamai_devel_mode'] = array(
+    $form['devel_fieldset']['devel_mode'] = array(
       '#type' => 'checkbox',
       '#title' => $this->t('Use development mode'),
-      '#default_value' => $config->get('akamai_devel_mode'),
+      '#default_value' => $config->get('devel_mode'),
       '#description' => $this->t('Use the a Mock API instead of a live one.'),
     );
 
-    $form['devel_fieldset']['akamai_mock_endpoint'] = array(
+    $form['devel_fieldset']['mock_endpoint'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Mock endpoint URI'),
-      '#default_value' => $config->get('akamai_mock_endpoint'),
+      '#default_value' => $config->get('mock_endpoint'),
       '#description' => $this->t('Mock endpoint used in development mode'),
     );
 
@@ -153,16 +153,16 @@ class AkamaiConfigForm extends ConfigFormBase {
    */
   public function submitform(array &$form, FormStateInterface $form_state) {
     $this->config('akamai.settings')
-      ->set('akamai_disabled', $form_state->getValue('akamai_disabled'))
+      ->set('disabled', $form_state->getValue('disabled'))
       ->set('akamai_restapi_endpoint', $form_state->getValue('akamai_restapi_endpoint'))
-      ->set('akamai_basepath', $form_state->getValue('akamai_basepath'))
-      ->set('akamai_timeout', $form_state->getValue('akamai_timeout'))
+      ->set('basepath', $form_state->getValue('basepath'))
+      ->set('timeout', $form_state->getValue('timeout'))
       ->set('akamai_username', $form_state->getValue('akamai_username'))
       ->set('akamai_password', $form_state->getValue('akamai_password'))
-      ->set('akamai_domain', $form_state->getValue('akamai_domain'))
-      ->set('akamai_action', $form_state->getValue('akamai_action'))
-      ->set('akamai_devel_mode', $form_state->getValue('akamai_devel_mode'))
-      ->set('akamai_mock_endpoint', $form_state->getValue('akamai_mock_endpoint'))
+      ->set('domain', $form_state->getValue('domain'))
+      ->set('action', $form_state->getValue('action'))
+      ->set('devel_mode', $form_state->getValue('devel_mode'))
+      ->set('mock_endpoint', $form_state->getValue('mock_endpoint'))
       ->save();
 
     drupal_set_message($this->t('Settings saved.'));
