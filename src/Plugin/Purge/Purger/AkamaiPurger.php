@@ -12,6 +12,7 @@ use Drupal\purge\Plugin\Purge\Purger\PurgerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\akamai\AkamaiClient;
+use \Drupal\purge\Plugin\Purge\Invalidation\InvalidationInterface;
 
 
 /**
@@ -28,7 +29,11 @@ use Drupal\akamai\AkamaiClient;
 class AkamaiPurger extends PurgerBase implements PurgerInterface {
 
 
-  // Web services client.
+  /**
+   * Web services client for Akamai API.
+   *
+   * @var \Drupal\akamai\AkamaiClient
+   */
   protected $client;
 
 
@@ -60,7 +65,7 @@ class AkamaiPurger extends PurgerBase implements PurgerInterface {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $config = $config->get('akamai.config');
-    $this->client = new AkamaiClient($config);
+    $this->client = AkamaiClient::create($config);
   }
 
   /**
@@ -75,7 +80,20 @@ class AkamaiPurger extends PurgerBase implements PurgerInterface {
    * {@inheritdoc}
    */
   public function invalidate(array $invalidations) {
-    // @todo: Implement invalidate() method.
+    foreach ($invalidations as $invalidation) {
+      $invalidation->setState(InvalidationInterface::PROCESSING);
+      $invalidation_type = $invalidation->getPluginId();
+
+      switch ($invalidation_type) {
+        case 'url':
+          $urls_to_clear[] = $invalidation;
+          break;
+
+        // @todo implement other invalidation types
+      }
+    }
+
+    $this->client->purgeUrls($urls_to_clear);
   }
 
 }
