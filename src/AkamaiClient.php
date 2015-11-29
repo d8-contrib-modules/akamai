@@ -8,6 +8,7 @@ namespace Drupal\akamai;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
+use Psr\Log\LoggerInterface;
 
 /**
  * Connects to the Akamai EdgeGrid.
@@ -45,39 +46,32 @@ class AkamaiClient extends Client {
   protected $purgeList;
 
   /**
-   * Factory method to create instances of the Client based on Drupal config.
+   * A logger instance.
    *
-   * @todo I think we can move this back to the constructor
-   *
-   * @param \Drupal\Core\Config\Config $config
-   *   A Drupal config object containing Akamai settings and credentials.
-   *
-   * @return \Drupal\akamai\AkamaiClient
-   *   A web services client, ready for use.
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
    */
-  public static function create(ConfigFactoryInterface $config_factory) {
-    $config = $config_factory->get('akamai.settings');
-    $akamai_client_config = array();
+  protected $logger;
 
-    // If we are in devel mode, use the mocked endpoint.
-    $akamai_client_config['base_uri'] = $config->get('devel_mode')
-      ? $config->get('mock_endpoint')
-      : $config->get('rest_api_host');
+  /**
+   * AkamaiClient constructor.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   A logger instance.
+   */
+  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger) {
+    $this->logger = $logger;
 
-    $akamai_client_config['timeout'] = $config->get('timeout');
+    $this->drupalConfig = $config_factory->get('akamai.settings');
+    $this->akamaiClientConfig = $this->createClientConfig();
 
-    // $auth = AkamaiAuthentication::create($config);
-    // @see Client::createFromEdgeRcFile()
-    $client = new static($akamai_client_config);
-    // Set the auth credentials up.
-    // @see Authentication::createFromEdgeRcFile()
-    $client->setAuth(
-      $config->get('client_token'),
-      $config->get('client_secret'),
-      $config->get('access_token')
+    parent::__construct($this->akamaiClientConfig);
+    $this->setAuth(
+      $this->drupalConfig->get('client_token'),
+      $this->drupalConfig->get('client_secret'),
+      $this->drupalConfig->get('access_token')
     );
-
-    return $client;
   }
 
   /**
@@ -89,17 +83,16 @@ class AkamaiClient extends Client {
    * @see Akamai\Open\EdgeGrid\Client::setBasicOptions
    */
   protected function createClientConfig() {
-    // @note this functionality has been moved to create().
-    // @todo do we need to keep the config in akamai format arbitrarily?
+    $client_config = array();
     // If we are in devel mode, use the mocked endpoint.
-    if ($this->drupalConfig->get('akamai_devel_mode') == TRUE) {
-      $this->akamaiClientConfig['base_uri'] = $this->drupalConfig->get('akamai_mock_endpoint');
+    if ($this->drupalConfig->get('devel_mode') == TRUE) {
+      $client_config['base_uri'] = $this->drupalConfig->get('mock_endpoint');
     }
     // @todo Add real API endpoint config
 
-    $this->akamaiClientConfig['timeout'] = $this->drupalConfig->get('akamai_timeout');
+    $client_config['timeout'] = $this->drupalConfig->get('timeout');
 
-    return $this->akamaiClientConfig;
+    return $client_config;
   }
 
 
@@ -108,9 +101,12 @@ class AkamaiClient extends Client {
    *
    * @param string $url
    *   A URL to clear.
+   *
+   * @return GuzzleHttp\Psr7\Response
+   *    Response to purge request.
    */
   public function purgeUrl($url) {
-    $this->purgeUrls(array($url));
+    return $this->purgeUrls(array($url));
   }
 
   /**
@@ -118,9 +114,12 @@ class AkamaiClient extends Client {
    *
    * @param array $urls
    *   List of URLs to purge.
+   *
+   * @return GuzzleHttp\Psr7\Response
+   *    Response to purge request.
    */
   public function purgeUrls($urls) {
-    $this->purgeRequest($urls);
+    return $this->purgeRequest($urls);
   }
 
   /**
@@ -131,7 +130,7 @@ class AkamaiClient extends Client {
    * @param string $queue
    *   The queue name to clear.
    *
-   * @return \Psr\Http\Message\ResponseInterface
+   * @return GuzzleHttp\Psr7\Response
    *    Response to purge request.
    *
    * @link https://developer.akamai.com/api/purge/ccu/reference.html
@@ -142,6 +141,7 @@ class AkamaiClient extends Client {
     // action: remove (default), invalidated
     // domain: production (default), staging
     // type: arl (default), cpcode.
+    // @todo Allow for customisation of request headers above.
     $response = $this->request(
       'POST',
       $this->apiBaseUrl . 'queues/' . $queue,
@@ -149,9 +149,20 @@ class AkamaiClient extends Client {
     );
 
     // Note that the response has useful data that we need to record.
-    // @todo Keep track of purgeId, estimatedSeconds, checkAfterSeconds.
+    // Example response body:
+    // {
+    //  "estimatedSeconds": 420,
+    //  "progressUri": "/ccu/v2/purges/57799d8b-10e4-11e4-9088-62ece60caaf0",
+    //  "purgeId": "57799d8b-10e4-11e4-9088-62ece60caaf0",
+    //  "supportId": "17PY1405953363409286-284546144",
+    //  "httpStatus": 201,
+    //  "detail": "Request accepted.",
+    //  "pingAfterSeconds": 420
+    //  }
+    // @todo Keep track of purgeId, estimatedSeconds, pingAfterSeconds.
     return $response;
   }
+
 
   /**
    * Add a URL to the internal list of URLs to purge.
@@ -204,7 +215,7 @@ class AkamaiClient extends Client {
    *   A count of the remaining items in the purge queue.
    */
   public function getQueueLength() {
-    return $this->getQueue->queueLength;
+    return $this->getQueue()->queueLength;
   }
 
   /**
