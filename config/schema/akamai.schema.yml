@@ -1,0 +1,56 @@
+# Schema for Akamai Cache integration settings.
+# @see https://github.com/akamai-open/api-kickstart/blob/master/sample_edgerc
+
+akamai.settings:
+  type: config_object
+  label: 'Akamai Settings'
+  mapping:
+    disabled:
+      type: boolean
+      label: 'Disable Akamai cache clearing globally'
+    rest_api_host:
+      type: string
+      label: 'URL to Akamai CCUv2 API. Available in your Akamai console.'
+    client_token:
+      type: string
+      label: 'Client token'
+    client_secret:
+      type: string
+      label: 'Client secret'
+    access_token:
+      type: string
+      label: 'Access token'
+    basepath:
+      type: string
+      label: 'Base path of this Drupal installation - for example, example.com or example.com/subdir.'
+    timeout:
+      type: integer
+      label: 'Time in seconds before requests to the API time out'
+    domain:
+      type: mapping
+      label: 'Domain'
+      mapping:
+        production:
+          type: boolean
+          label: 'Production'
+        staging:
+          type: boolean
+          label: 'Staging'
+    action:
+      type: mapping
+      label: 'Action'
+      mapping:
+        remove:
+          type: boolean
+          label: 'Remove'
+          description: 'Remove content entirely from Edge server caches. next time an Edge server receives a request for the content, it will retrieve the current version from the origin server.'
+        invalidate:
+          type: boolean
+          label: 'Invalidate'
+          description: 'Marks the cached content as invalid. The next time a server receives a request for the content, it sends an HTTP conditional GET (If-Modified-Since) request to the origin. If the content has changed, the origin server returns a full fresh copy. Otherwise, the origin normally responds that the content has not changed, and the Edge server can serve the already-cached content.'
+    devel_mode:
+      type: boolean
+      label: 'Use the mock endpoint instead of the real one (for development/testing).'
+    mock_endpoint:
+      type: string
+      label: 'Mock endpoint URL (for devel mode).'
