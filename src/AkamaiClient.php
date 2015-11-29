@@ -6,7 +6,7 @@
 
 namespace Drupal\akamai;
 
-use Drupal\Core\Config\Config;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
 
 /**
@@ -55,15 +55,16 @@ class AkamaiClient extends Client {
    * @return \Drupal\akamai\AkamaiClient
    *   A web services client, ready for use.
    */
-  public static function create(Config $config) {
+  public static function create(ConfigFactoryInterface $config_factory) {
+    $config = $config_factory->get('akamai.settings');
     $akamai_client_config = array();
 
     // If we are in devel mode, use the mocked endpoint.
-    $akamai_client_config['base_uri'] = $config->get('akamai_devel_mode')
-      ? $config->get('akamai_mock_endpoint')
-      : $config->get('akamai_restapi_endpoint');
+    $akamai_client_config['base_uri'] = $config->get('devel_mode')
+      ? $config->get('mock_endpoint')
+      : $config->get('rest_api_host');
 
-    $akamai_client_config['timeout'] = $config->get('akamai_timeout');
+    $akamai_client_config['timeout'] = $config->get('timeout');
 
     // $auth = AkamaiAuthentication::create($config);
     // @see Client::createFromEdgeRcFile()

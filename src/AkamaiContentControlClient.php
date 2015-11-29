@@ -34,13 +34,6 @@ class AkamaiContentControlClient implements AkamaiContentControlInterface {
   protected $logger;
 
   /**
-   * The akamai.settings config object.
-   *
-   * @var \Drupal\Core\Config\Config;
-   */
-  protected $config;
-
-  /**
    * Constructs an AkamaiContentControlClient object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -51,9 +44,8 @@ class AkamaiContentControlClient implements AkamaiContentControlInterface {
    * @todo Inject HTTPClient
    */
   public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger) {
-    $this->config = $config_factory->get('akamai.settings');
     $this->logger = $logger;
-    $this->httpClient = AkamaiClient::create($this->config);
+    $this->httpClient = AkamaiClient::create($config_factory);
   }
 
 

@@ -63,8 +63,6 @@ class AkamaiPurger extends PurgerBase implements PurgerInterface {
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $config = $config->get('akamai.config');
     $this->client = AkamaiClient::create($config);
   }
 

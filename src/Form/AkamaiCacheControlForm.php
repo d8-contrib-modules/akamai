@@ -72,7 +72,7 @@ class AkamaiCacheControlForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     //$akamai = \Drupal::service('akamai.akamaiservice');
-    $akamai = AkamaiClient::create($this->config('akamai.settings'));
+    $akamai = AkamaiClient::create($this->configFactory());
 
     foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
       $akamai->purgeUrl($path);
