@@ -60,20 +60,19 @@ class AkamaiClient extends Client {
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger) {
+  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger = NULL) {
+    if (is_null($logger)) {
+      $logger = \Drupal::service('logger.channel.akamai');
+    }
     $this->logger = $logger;
     $this->drupalConfig = $config_factory->get('akamai.settings');
     $this->akamaiClientConfig = $this->createClientConfig();
 
-    // $auth = AkamaiAuthentication::create($config);
+    // Create an authentication object so we can sign requests.
+    $auth = AkamaiAuthentication::create($this->drupalConfig);
     // Set the auth credentials up.
     // @see Authentication::createFromEdgeRcFile()
-    parent::__construct($this->akamaiClientConfig);
-    $this->setAuth(
-      $this->drupalConfig->get('client_token'),
-      $this->drupalConfig->get('client_secret'),
-      $this->drupalConfig->get('access_token')
-    );
+    parent::__construct($this->akamaiClientConfig, $auth);
   }
 
   /**
@@ -90,8 +89,10 @@ class AkamaiClient extends Client {
     if ($this->drupalConfig->get('devel_mode') == TRUE) {
       $client_config['base_uri'] = $this->drupalConfig->get('mock_endpoint');
     }
+    else {
+      $client_config['base_uri'] = $this->drupalConfig->get('rest_api_url');
+    }
 
-    // @todo Add real API endpoint config
     $client_config['timeout'] = $this->drupalConfig->get('timeout');
 
     return $client_config;

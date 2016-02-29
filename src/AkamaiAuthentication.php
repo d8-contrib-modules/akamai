@@ -30,17 +30,19 @@ class AkamaiAuthentication extends Authentication {
     // Following the pattern in the superclass.
     $auth = new static();
 
-    // Set the auth credentials up.
-    // @see Authentication::createFromEdgeRcFile()
-    $auth->setAuth(
-      $config->get('client_token'),
-      $config->get('client_secret'),
-      $config->get('access_token')
-    );
-
     // @todo Maybe make the devel mode check a library function?
     if ($config->get('devel_mode') == TRUE) {
       $auth->setHost($config->get('mock_endpoint'));
+    }
+    else {
+      $auth->setHost($config->get('rest_api_url'));
+      // Set the auth credentials up.
+      // @see Authentication::createFromEdgeRcFile()
+      $auth->setAuth(
+        $config->get('client_token'),
+        $config->get('client_secret'),
+        $config->get('access_token')
+      );
     }
 
     return $auth;
