@@ -1,4 +1,7 @@
 services:
+  akamai.edgegridclient:
+    class: Drupal\akamai\AkamaiClient
+    arguments: ['@config.factory', '@logger.channel.akamai']
   logger.channel.akamai:
     class: Drupal\Core\Logger\LoggerChannel
     factory: logger.factory:get
