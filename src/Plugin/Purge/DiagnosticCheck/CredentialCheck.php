@@ -69,6 +69,9 @@ class CredentialCheck extends DiagnosticCheckBase implements DiagnosticCheckInte
       return SELF::SEVERITY_OK;
     }
 
+    $client = \Drupal::service('akamai.edgegridclient');
+    $has_valid_credentials = $client->isAuthorized();
+
     // @todo Implement below.
     if (!$has_valid_credentials) {
       $this->recommendation = $this->t("Invalid API credentials.");
