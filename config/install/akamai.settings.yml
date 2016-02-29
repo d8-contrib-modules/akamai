@@ -1,5 +1,5 @@
 disabled: FALSE
-rest_api_host: 'https://xxxx-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net/'
+rest_api_url: 'https://xxxx-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net/'
 client_token: 'xxxx-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx'
 client_secret: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 access_token: 'xxxx-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx'

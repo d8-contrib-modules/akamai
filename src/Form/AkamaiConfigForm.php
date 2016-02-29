@@ -8,6 +8,7 @@ namespace Drupal\akamai\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 
 /**
  * A configuration form to interact with Akamai API settings.
@@ -50,11 +51,42 @@ class AkamaiConfigForm extends ConfigFormBase {
       '#default_value' => $config->get('disable'),
     );
 
-    $form['akamai_restapi_endpoint'] = array(
+    // Akamai credentials
+    $luna_url = 'https://developer.akamai.com/introduction/Prov_Creds.html';
+    $luna_uri = Url::fromUri($luna_url);
+
+    $form['akamai_credentials_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => $this->t('Akamai CCUv2 Credentials'),
+      '#description' => $this->t('API Credentials for Akamai. Someone with Luna access will need to set this up. See @link for more.', array('@link' => $this->l($luna_url, $luna_uri))),
+    );
+
+    $form['akamai_credentials_fieldset']['rest_api_url'] = array(
       '#type' => 'textfield',
-      '#title' => $this->t('REST API Endpoint'),
+      '#title' => $this->t('REST API URL'),
       '#description'   => $this->t('The URL of the Akamai CCUv2 API host. It should be in the format *.luna.akamaiapis.net/'),
-      '#default_value' => $config->get('rest_api_host'),
+      '#default_value' => $config->get('rest_api_url'),
+    );
+
+    $form['akamai_credentials_fieldset']['access_token'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Access Token'),
+      '#description'   => $this->t('Access token'),
+      '#default_value' => $config->get('access_token'),
+    );
+
+    $form['akamai_credentials_fieldset']['client_token'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Client Token'),
+      '#description'   => $this->t('Client token'),
+      '#default_value' => $config->get('client_token'),
+    );
+
+    $form['akamai_credentials_fieldset']['client_secret'] = array(
+      '#type' => 'textfield',
+      '#title' => $this->t('Client Secret'),
+      '#description'   => $this->t('Client secret'),
+      '#default_value' => $config->get('client_secret'),
     );
 
     global $base_url;
@@ -64,7 +96,7 @@ class AkamaiConfigForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Base Path'),
       '#default_value' => $basepath,
-      '#description' => $this->t('The URL of the base path (fully qualified domain name) of the site.  This will be used as a prefix for all cache clears (Akamai indexs on the full URI). e.g. "http://www.example.com"'),
+      '#description' => $this->t('The URL of the base path (fully qualified domain name) of the site.  This will be used as a prefix for all cache clears (Akamai indexes on the full URI). e.g. "http://www.example.com"'),
       '#required' => TRUE,
     );
 
@@ -133,7 +165,10 @@ class AkamaiConfigForm extends ConfigFormBase {
 
     $this->config('akamai.settings')
       ->set('disabled', $values['disabled'])
-      ->set('rest_api_endpoint', $values['rest_api_endpoint'])
+      ->set('rest_api_url', $values['rest_api_url'])
+      ->set('client_token', $values['client_token'])
+      ->set('client_secret', $values['client_secret'])
+      ->set('access_token', $values['access_token'])
       ->set('basepath', $values['basepath'])
       ->set('timeout', $values['timeout'])
       ->set('domain', $this->saveDomain($values['domain']))
