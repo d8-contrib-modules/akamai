@@ -8,7 +8,7 @@ akamai.settings:
     disabled:
       type: boolean
       label: 'Disable Akamai cache clearing globally'
-    rest_api_host:
+    rest_api_url:
       type: string
       label: 'URL to Akamai CCUv2 API. Available in your Akamai console.'
     client_token:

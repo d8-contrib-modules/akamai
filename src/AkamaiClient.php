@@ -59,11 +59,11 @@ class AkamaiClient extends Client {
     $akamai_client_config = array();
 
     // If we are in devel mode, use the mocked endpoint.
-    $akamai_client_config['base_uri'] = $config->get('akamai_devel_mode')
-      ? $config->get('akamai_mock_endpoint')
-      : $config->get('akamai_restapi_endpoint');
+    $akamai_client_config['base_uri'] = $config->get('devel_mode')
+      ? $config->get('mock_endpoint')
+      : $config->get('rest_api_url');
 
-    $akamai_client_config['timeout'] = $config->get('akamai_timeout');
+    $akamai_client_config['timeout'] = $config->get('timeout');
 
     // $auth = AkamaiAuthentication::create($config);
     // @see Client::createFromEdgeRcFile()
@@ -91,12 +91,12 @@ class AkamaiClient extends Client {
     // @note this functionality has been moved to create().
     // @todo do we need to keep the config in akamai format arbitrarily?
     // If we are in devel mode, use the mocked endpoint.
-    if ($this->drupalConfig->get('akamai_devel_mode') == TRUE) {
-      $this->akamaiClientConfig['base_uri'] = $this->drupalConfig->get('akamai_mock_endpoint');
+    if ($this->drupalConfig->get('devel_mode') == TRUE) {
+      $this->akamaiClientConfig['base_uri'] = $this->drupalConfig->get('mock_endpoint');
     }
     // @todo Add real API endpoint config
 
-    $this->akamaiClientConfig['timeout'] = $this->drupalConfig->get('akamai_timeout');
+    $this->akamaiClientConfig['timeout'] = $this->drupalConfig->get('timeout');
 
     return $this->akamaiClientConfig;
   }
