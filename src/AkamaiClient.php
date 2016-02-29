@@ -98,6 +98,19 @@ class AkamaiClient extends Client {
     return $client_config;
   }
 
+  /**
+   * Checks that we can connect with the supplied credentials.
+   */
+  public function isAuthorized() {
+    try {
+      $response = $this->_getQueue();
+    }
+    catch (\GuzzleHttp\Exception\ClientException $e) {
+      // @todo better handling
+      return FALSE;
+    }
+    return $response->getStatusCode() == 200;
+  }
 
   /**
    * Purges a single URL object.
@@ -206,9 +219,24 @@ class AkamaiClient extends Client {
    * @link https://api.ccu.akamai.com/ccu/v2/docs/#section_CheckingQueueLength
    * @link https://developer.akamai.com/api/purge/ccu/reference.html
    */
-  protected function getQueue($queue_name = 'default') {
-    $response = $this->get("/ccu/v2/queues/{$queue_name}");
-    return json_decode($response->getBody());
+  public function getQueue($queue_name = 'default') {
+    return json_decode($this->_getQueue($queue_name)->getBody());
+  }
+
+
+  /**
+   * Gets the raw Guzzle result of checking a queue.
+   *
+   * We use this to check connectivity, which is why it is broken out into a
+   * private function.
+   *
+   * @param string $queue_name
+   *   The queue name to check. Defaults to 'default'.
+   *
+   * @return \Psr\Http\Message\ResponseInterface
+   */
+  private function _getQueue($queue_name = 'default') {
+    return $this->get("/ccu/v2/queues/{$queue_name}");
   }
 
   /**
@@ -230,5 +258,7 @@ class AkamaiClient extends Client {
   protected function getPurgeStatus($purge_id) {
     // @todo Implement purge checking once we are tracking purge ids.
   }
+
+
 
 }

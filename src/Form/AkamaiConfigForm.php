@@ -177,7 +177,21 @@ class AkamaiConfigForm extends ConfigFormBase {
       ->set('mock_endpoint', $values['mock_endpoint'])
       ->save();
 
+    $this->checkCredentials();
     drupal_set_message($this->t('Settings saved.'));
+  }
+
+  /**
+   * Ensures credentials supplied actually work.
+   */
+  protected function checkCredentials() {
+    $client = \Drupal::service('akamai.edgegridclient');
+    if ($client->isAuthorized()) {
+      drupal_set_message('Authenticated to Akamai.');
+    }
+    else {
+      drupal_set_message('Akamai authentication failed.', 'error');
+    }
   }
 
   /**
