@@ -39,8 +39,8 @@ class AkamaiAuthentication extends Authentication {
     );
 
     // @todo Maybe make the devel mode check a library function?
-    if ($config->get('akamai_devel_mode') == TRUE) {
-      $auth->setHost($config->get('akamai_mock_endpoint'));
+    if ($config->get('devel_mode') == TRUE) {
+      $auth->setHost($config->get('mock_endpoint'));
     }
 
     return $auth;
