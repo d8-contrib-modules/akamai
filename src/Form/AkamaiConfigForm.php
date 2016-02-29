@@ -51,7 +51,7 @@ class AkamaiConfigForm extends ConfigFormBase {
       '#default_value' => $config->get('disable'),
     );
 
-    // Akamai credentials
+    // Link to instructions on how to get Akamai credentials from Luna.
     $luna_url = 'https://developer.akamai.com/introduction/Prov_Creds.html';
     $luna_uri = Url::fromUri($luna_url);
 
