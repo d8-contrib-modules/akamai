@@ -15,3 +15,11 @@ Akamai provides a Mock API endpoint at
 http://private-250a0-akamaiopen2purgeccuproduction.apiary-mock.com/ccu/v2/queues/default
 
 You can enable development mode in the config form to use this instead of a live URL.
+
+
+## Akamai Credentials
+
+Follow the instructions here to set up the client credentials.
+https://developer.akamai.com/introduction/Prov_Creds.html
+
+You will need admin access to the Luna control panel to create credentials.
