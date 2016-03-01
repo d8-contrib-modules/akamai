@@ -9,6 +9,8 @@ care of invalidating caches automatically when content is updated.
 
 It incorporates the [AkamaiOPEN-edgegrid-php](https://github.com/akamai-open/AkamaiOPEN-edgegrid-php) library.
 
+Development is presently based on Github at https://github.com/d8-contrib-modules/akamai, with all changes synced to Drupal.org. This may change in the future.
+
 ## Installation and configuration
 
 Install the module as usual.
