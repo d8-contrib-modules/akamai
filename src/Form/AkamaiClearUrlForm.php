@@ -26,7 +26,7 @@ class AkamaiClearUrlForm extends FormBase {
     $config = $this->config('akamai.settings');
     $form = array();
 
-    $current_uri = $this->requestStack->getCurrentRequest()->getRequestUri();
+    $current_uri = $this->getRequest()->getRequestUri();
 
     $form['path'] = array(
       '#type'  => 'hidden',

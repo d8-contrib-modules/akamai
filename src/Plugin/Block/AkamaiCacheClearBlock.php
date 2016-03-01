@@ -26,7 +26,7 @@ class AkamaiCacheClearBlock extends BlockBase {
    * {@inheritdoc}
    */
   public function build() {
-    $form = \Drupal::formBuilder()->getForm('\Drupal\akamai\Form\AkamaiClearUrlForm');
+    $form = \Drupal::formBuilder()->getForm('Drupal\akamai\Form\AkamaiClearUrlForm');
     return array(
       'cache_clear_form' => $form,
     );
