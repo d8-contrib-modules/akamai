@@ -23,10 +23,9 @@ class AkamaiClearUrlForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('akamai.settings');
     $form = array();
 
-    $current_uri = $this->requestStack->getCurrentRequest()->getRequestUri();
+    $current_uri = $this->getRequest()->getRequestUri();
 
     $form['path'] = array(
       '#type'  => 'hidden',
