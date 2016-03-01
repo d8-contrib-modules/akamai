@@ -63,7 +63,7 @@ class AkamaiPurger extends PurgerBase implements PurgerInterface {
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->client = AkamaiClient::create($config);
+    $this->client = \Drupal::service('akamai.edgegridclient');
   }
 
   /**
