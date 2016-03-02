@@ -75,23 +75,27 @@ class AkamaiCacheControlForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $akamai = \Drupal::service('akamai.edgegridclient');
-    //$akamai = new AkamaiClient($this->configFactory());
+
     $urls_to_clear = array();
     foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
       $urls_to_clear[] = $path;
     }
 
-    $response = $akamai->purgeUrls($urls_to_clear);
+    $response = \Drupal::service('akamai.edgegridclient')->purgeUrls($urls_to_clear);
 
-    drupal_set_message($this->t(
-      'The response code was: @response_code',
-      array('@response_code' => $response->getStatusCode())
-    ));
-    drupal_set_message($this->t(
-      'The response body was: @response_body',
-      array('@response_body' => $response->getBody())
-    ));
+    if ($response) {
+      drupal_set_message($this->t(
+        'The response code was: @response_code',
+        array('@response_code' => $response->getStatusCode())
+      ));
+      drupal_set_message($this->t(
+        'The response body was: @response_body',
+        array('@response_body' => $response->getBody())
+      ));
+    }
+    else {
+      drupal_set_message('There was an error clearing the cache. Check logs for further detail.', 'error');
+    }
   }
 
 }
