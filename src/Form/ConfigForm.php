@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Contains Drupal\akamai\Form\AkamaiConfigForm.
+ * Contains Drupal\akamai\Form\ConfigForm.
  */
 
 namespace Drupal\akamai\Form;
@@ -13,7 +13,7 @@ use Drupal\Core\Url;
 /**
  * A configuration form to interact with Akamai API settings.
  */
-class AkamaiConfigForm extends ConfigFormBase {
+class ConfigForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}

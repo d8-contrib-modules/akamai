@@ -1,14 +1,14 @@
 akamai.settings:
   path: 'admin/config/akamai'
   defaults:
-    _form: '\Drupal\akamai\Form\AkamaiConfigForm'
+    _form: '\Drupal\akamai\Form\ConfigForm'
     _title: 'Akamai Configuration'
   requirements:
     _permission: 'administer akamai'
 akamai.cache_clear:
   path: 'admin/config/akamai/cache-control'
   defaults:
-    _form: '\Drupal\akamai\Form\AkamaiCacheControlForm'
+    _form: '\Drupal\akamai\Form\CacheControlForm'
     _title: 'Akamai Cache Control'
   requirements:
     _permission: 'purge akamai cache'

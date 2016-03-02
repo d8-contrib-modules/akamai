@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains Drupal\akamai\Form\AkamaiCacheControlForm.
+ * Contains Drupal\akamai\Form\CacheControlForm.
  */
 
 namespace Drupal\akamai\Form;
@@ -13,7 +13,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * A simple form for testing the Akamai integration, or doing manual clears.
  */
-class AkamaiCacheControlForm extends FormBase {
+class CacheControlForm extends FormBase {
 
   /**
    * {@inheritdoc}
