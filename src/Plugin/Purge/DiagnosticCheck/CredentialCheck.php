@@ -69,11 +69,8 @@ class CredentialCheck extends DiagnosticCheckBase implements DiagnosticCheckInte
       return SELF::SEVERITY_OK;
     }
 
-    $client = \Drupal::service('akamai.edgegridclient');
-    $has_valid_credentials = $client->isAuthorized();
-
-    // @todo Implement below.
-    if (!$has_valid_credentials) {
+    // @todo Getting this globally feels gross. Is there a better way?
+    if (\Drupal::state()->get('akamai.valid_credentials') == FALSE) {
       $this->recommendation = $this->t("Invalid API credentials.");
       return SELF::SEVERITY_ERROR;
     }
