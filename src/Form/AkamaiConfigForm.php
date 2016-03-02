@@ -64,7 +64,7 @@ class AkamaiConfigForm extends ConfigFormBase {
     $form['akamai_credentials_fieldset']['rest_api_url'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('REST API URL'),
-      '#description'   => $this->t('The URL of the Akamai CCUv2 API host. It should be in the format *.luna.akamaiapis.net/'),
+      '#description'   => $this->t('The URL of the Akamai CCUv2 API host. It should be in the format *.purge.akamaiapis.net/'),
       '#default_value' => $config->get('rest_api_url'),
     );
 
