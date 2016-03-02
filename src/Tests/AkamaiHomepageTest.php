@@ -60,13 +60,13 @@ class AkamaiHomepageTest extends WebTestBase {
   }
 
   /**
-   * Tests clear of homepage and rendering of block
+   * Tests that Akamai Cache Clear block can clear the homepage.
    */
   public function testHomepageClear() {
-    // Test availability of the twitter block in the admin "Place blocks" list.
-    \Drupal::service('theme_handler')->install(['bartik', 'seven', 'stark']);
+    // Set up theme.
+    \Drupal::service('theme_handler')->install(['bartik']);
     $theme_settings = $this->config('system.theme');
-    foreach (['bartik', 'seven', 'stark'] as $theme) {
+    foreach (['bartik'] as $theme) {
       $this->drupalGet('admin/structure/block/list/' . $theme);
       $this->assertTitle(t('Block layout') . ' | Drupal');
       // Configure and save the block.
@@ -76,6 +76,8 @@ class AkamaiHomepageTest extends WebTestBase {
       ));
       // Set the default theme and ensure the block is placed.
       $theme_settings->set('default', $theme)->save();
+      // The cache clearing block should pick up the current URL as the clearing
+      // target.
       $this->drupalGet($this->homepage);
       $this->assertText($this->homepage, 'The Akamai path field is set correctly');
     }
