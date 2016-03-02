@@ -166,25 +166,24 @@ class AkamaiClient extends Client {
         $this->apiBaseUrl . 'queues/' . $queue,
         ['json' => $this->createPurgeBody($objects)]
       );
+      // Note that the response has useful data that we need to record.
+      // Example response body:
+      // {
+      //  "estimatedSeconds": 420,
+      //  "progressUri": "/ccu/v2/purges/57799d8b-10e4-11e4-9088-62ece60caaf0",
+      //  "purgeId": "57799d8b-10e4-11e4-9088-62ece60caaf0",
+      //  "supportId": "17PY1405953363409286-284546144",
+      //  "httpStatus": 201,
+      //  "detail": "Request accepted.",
+      //  "pingAfterSeconds": 420
+      //  }
+      // @todo Keep track of purgeId, estimatedSeconds, pingAfterSeconds.
+      return $response;
     }
     catch (ClientException $e) {
       $this->logger->error($e->getMessage());
       //throw $e;
     }
-
-    // Note that the response has useful data that we need to record.
-    // Example response body:
-    // {
-    //  "estimatedSeconds": 420,
-    //  "progressUri": "/ccu/v2/purges/57799d8b-10e4-11e4-9088-62ece60caaf0",
-    //  "purgeId": "57799d8b-10e4-11e4-9088-62ece60caaf0",
-    //  "supportId": "17PY1405953363409286-284546144",
-    //  "httpStatus": 201,
-    //  "detail": "Request accepted.",
-    //  "pingAfterSeconds": 420
-    //  }
-    // @todo Keep track of purgeId, estimatedSeconds, pingAfterSeconds.
-    return $response;
   }
 
 
