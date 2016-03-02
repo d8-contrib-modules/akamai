@@ -22,7 +22,7 @@ env:
 
     # Configuration variables.
     - DRUPAL_TI_MODULE_NAME="akamai"
-    - DRUPAL_TI_SIMPLETEST_GROUP="akamai"
+    - DRUPAL_TI_SIMPLETEST_GROUP="Akamai"
 
     # Define runners and environment vars to include before and after the
     # main runners / environment vars.
