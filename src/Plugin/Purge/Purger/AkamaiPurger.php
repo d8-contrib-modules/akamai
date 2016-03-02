@@ -23,7 +23,7 @@ use \Drupal\purge\Plugin\Purge\Invalidation\InvalidationInterface;
  *   label = @Translation("Akamai Purger"),
  *   description = @Translation("Provides a Purge service for Akamai CCU."),
  *   types = {"url", "everything"},
- *   configform = "Drupal\akamai\Form\AkamaiConfigForm",
+ *   configform = "Drupal\akamai\Form\ConfigForm",
  * )
  */
 class AkamaiPurger extends PurgerBase implements PurgerInterface {
