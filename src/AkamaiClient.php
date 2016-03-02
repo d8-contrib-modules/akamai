@@ -9,6 +9,7 @@ namespace Drupal\akamai;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
 use Psr\Log\LoggerInterface;
+use GuzzleHttp\Exception\ClientException;
 
 /**
  * Connects to the Akamai EdgeGrid.
@@ -61,6 +62,7 @@ class AkamaiClient extends Client {
    *   A logger instance.
    */
   public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger = NULL) {
+    // @todo remove this
     if (is_null($logger)) {
       $logger = \Drupal::service('logger.channel.akamai');
     }
@@ -158,11 +160,17 @@ class AkamaiClient extends Client {
     // domain: production (default), staging
     // type: arl (default), cpcode.
     // @todo Allow for customisation of request headers above.
-    $response = $this->request(
-      'POST',
-      $this->apiBaseUrl . 'queues/' . $queue,
-      ['json' => $this->createPurgeBody($objects)]
-    );
+    try {
+      $response = $this->request(
+        'POST',
+        $this->apiBaseUrl . 'queues/' . $queue,
+        ['json' => $this->createPurgeBody($objects)]
+      );
+    }
+    catch (ClientException $e) {
+      $this->logger->error($e->getMessage());
+      //throw $e;
+    }
 
     // Note that the response has useful data that we need to record.
     // Example response body:
