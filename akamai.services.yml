@@ -6,3 +6,7 @@ services:
     class: Drupal\Core\Logger\LoggerChannel
     factory: logger.factory:get
     arguments: ['akamai']
+  akamai.config_subscriber:
+    class: Drupal\akamai\EventSubscriber\ConfigSubscriber
+    tags:
+      - { name: event_subscriber }
