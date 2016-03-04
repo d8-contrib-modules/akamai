@@ -11,7 +11,6 @@ use Drupal\purge\Plugin\Purge\Purger\PurgerBase;
 use Drupal\purge\Plugin\Purge\Purger\PurgerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\akamai\AkamaiClient;
 use \Drupal\purge\Plugin\Purge\Invalidation\InvalidationInterface;
 
 
@@ -23,7 +22,7 @@ use \Drupal\purge\Plugin\Purge\Invalidation\InvalidationInterface;
  *   label = @Translation("Akamai Purger"),
  *   description = @Translation("Provides a Purge service for Akamai CCU."),
  *   types = {"url", "everything"},
- *   configform = "Drupal\akamai\Form\AkamaiConfigForm",
+ *   configform = "Drupal\akamai\Form\ConfigForm",
  * )
  */
 class AkamaiPurger extends PurgerBase implements PurgerInterface {

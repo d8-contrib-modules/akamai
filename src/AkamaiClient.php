@@ -176,13 +176,13 @@ class AkamaiClient extends Client {
       //  "httpStatus": 201,
       //  "detail": "Request accepted.",
       //  "pingAfterSeconds": 420
-      //  }
+      //  }.
       // @todo Keep track of purgeId, estimatedSeconds, pingAfterSeconds.
       return $response;
     }
     catch (ClientException $e) {
       $this->logger->error($e->getMessage());
-      //throw $e;
+      // Throw $e;.
     }
   }
 
@@ -265,7 +265,5 @@ class AkamaiClient extends Client {
   protected function getPurgeStatus($purge_id) {
     // @todo Implement purge checking once we are tracking purge ids.
   }
-
-
 
 }

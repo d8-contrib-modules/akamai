@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Contains Drupal\akamai\Plugin\Purge\DiagnosticCheck.
  */
 

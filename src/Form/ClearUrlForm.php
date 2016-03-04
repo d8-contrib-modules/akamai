@@ -2,15 +2,17 @@
 
 /**
  * @file
- * Contains Drupal/akamai/Form/AkamaiClearUrlForm.
+ * Contains Drupal/akamai/Form/ClearUrlForm.
  */
 
 namespace Drupal\akamai\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-
-class AkamaiClearUrlForm extends FormBase {
+/**
+ *
+ */
+class ClearUrlForm extends FormBase {
 
   /**
    * {@inheritdoc}
