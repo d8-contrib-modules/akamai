@@ -9,6 +9,7 @@ namespace Drupal\akamai;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Exception\ClientException;
 use Drupal\Component\Serialization\Json;
@@ -17,6 +18,11 @@ use Drupal\Component\Serialization\Json;
  * Connects to the Akamai EdgeGrid.
  */
 class AkamaiClient extends Client {
+
+  /**
+   * State key for keeping track of purge statuses.
+   */
+  const PURGE_STATUS_KEY = 'akamai.purge_status';
 
   /**
    * The settings configuration.
@@ -192,6 +198,7 @@ class AkamaiClient extends Client {
 
     try {
       $response = $this->send($request);
+      $this->saveResponseStatus($response);
       // Note that the response has useful data that we need to record.
       // Example response body:
       // {
@@ -207,10 +214,10 @@ class AkamaiClient extends Client {
     }
     catch (ClientException $e) {
       $this->logger->error($e->getMessage());
-      // @todo better error handling
       // Throw $e;.
     }
   }
+
 
   /**
    * Add a URL to the internal list of URLs to purge.
@@ -258,6 +265,7 @@ class AkamaiClient extends Client {
     return Json::decode($this->_getQueue($queue_name)->getBody());
   }
 
+
   /**
    * Gets the raw Guzzle result of checking a queue.
    *
@@ -290,7 +298,6 @@ class AkamaiClient extends Client {
    *   The UUID of the purge request to check.
    */
   protected function getPurgeStatus($purge_id) {
-    // @todo Implement purge checking once we are tracking purge ids.
     $request = new Request(
       $this->apiBaseUrl . 'purges/' . $purge_id
     );
@@ -303,6 +310,33 @@ class AkamaiClient extends Client {
       $this->logger->log($e->getMessage());
       return FALSE;
     }
+  }
+
+  /**
+   * Keeps track of response statuses so we can reference them later.
+   *
+   * @param Response $response
+   *   Response object, returned from a successful CCU call.
+   *
+   * @todo move status tracking into its own class
+   */
+  protected function saveResponseStatus($response) {
+    $statuses = $this->getResponseStatuses();
+    $response_body = Json::decode($response->getBody());
+    // Add a request made timestamp so we can compare later.
+    $response_body['request_made_at'] = REQUEST_TIME;
+    $statuses[] = $response_body;
+    \Drupal::state()->set(AkamaiClient::PURGE_STATUS_KEY, $statuses);
+  }
+
+  /**
+   * Return a list of response statuses.
+   *
+   * @return array
+   *   An array of responses.
+   */
+  public static function getResponseStatuses() {
+    return \Drupal::state()->get(AkamaiClient::PURGE_STATUS_KEY);
   }
 
   public function setQueue($queue) {
