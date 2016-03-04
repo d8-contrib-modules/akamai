@@ -7,13 +7,41 @@
 
 namespace Drupal\akamai\Form;
 
+use Drupal\akamai\AkamaiClient;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * A simple form for testing the Akamai integration, or doing manual clears.
  */
 class CacheControlForm extends FormBase {
+
+  /**
+   * The akamai client.
+   *
+   * @var \Drupal\akamai\AkamaiClient
+   */
+  protected $akamaiClient;
+
+  /**
+   * Constructs a new CacheControlForm.
+   *
+   * @param \Drupal\akamai\AkamaiClient
+   *   The akamai client.
+   */
+  public function __construct(AkamaiClient $akamaiClient) {
+    $this->akamaiClient = $akamaiClient;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('akamai.edgegridclient')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -80,7 +108,7 @@ class CacheControlForm extends FormBase {
     foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
       $urls_to_clear[] = $path;
     }
-    $response = \Drupal::service('akamai.edgegridclient')->purgeUrls($urls_to_clear);
+    $response = $this->akamaiClient->purgeUrls($urls_to_clear);
     if ($response) {
       drupal_set_message($this->t(
         'The response code was: @response_code',
