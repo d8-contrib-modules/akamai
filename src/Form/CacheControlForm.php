@@ -75,26 +75,22 @@ class CacheControlForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-
     $urls_to_clear = array();
     foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
-      $urls_to_clear[] = $path;
+      $urls_to_clear[] = trim($path);
     }
+    $action = $form_state->getValue('action');
 
-    $response = \Drupal::service('akamai.edgegridclient')->purgeUrls($urls_to_clear);
+    $client = \Drupal::service('akamai.edgegridclient');
+    $client->setAction($action);
+    $client->setDomain($form_state->getValue('domain_override'));
+    $response = $client->purgeUrls($urls_to_clear);
 
     if ($response) {
-      drupal_set_message($this->t(
-        'The response code was: @response_code',
-        array('@response_code' => $response->getStatusCode())
-      ));
-      drupal_set_message($this->t(
-        'The response body was: @response_body',
-        array('@response_body' => $response->getBody())
-      ));
+      drupal_set_message($this->t('Requested :action of the following URLs: :urls', [':action' => $action, ':urls' => implode(', ', $urls_to_clear)]));
     }
     else {
-      drupal_set_message('There was an error clearing the cache. Check logs for further detail.', 'error');
+      drupal_set_message($this->t('There was an error clearing the cache. Check logs for further detail.'), 'error');
     }
   }
 
