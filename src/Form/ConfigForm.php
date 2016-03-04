@@ -20,7 +20,7 @@ class ConfigForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'akamai.settings'
+      'akamai.settings',
     ];
   }
 
@@ -244,4 +244,5 @@ class ConfigForm extends ConfigFormBase {
     $action[$value] = TRUE;
     return $action;
   }
+
 }

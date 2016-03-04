@@ -11,7 +11,6 @@ use Drupal\purge\Plugin\Purge\Purger\PurgerBase;
 use Drupal\purge\Plugin\Purge\Purger\PurgerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\akamai\AkamaiClient;
 use \Drupal\purge\Plugin\Purge\Invalidation\InvalidationInterface;
 
 

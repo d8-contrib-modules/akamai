@@ -47,4 +47,5 @@ class ConfigSubscriber implements EventSubscriberInterface {
     $events[ConfigEvents::SAVE][] = array('onConfigSave', 0);
     return $events;
   }
+
 }
