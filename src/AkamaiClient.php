@@ -315,7 +315,7 @@ class AkamaiClient extends Client {
       $this->action = $action;
     }
     else {
-      throw new \InvalidArgumentException('Action must be one of: remove, invalidate');
+      throw new \InvalidArgumentException('Action must be one of: ' . implode(', ', $valid_actions));
     }
   }
 
@@ -325,7 +325,7 @@ class AkamaiClient extends Client {
       $this->type = $type;
     }
     else {
-      throw new \InvalidArgumentException('Type must be one of: cpcode, arl');
+      throw new \InvalidArgumentException('Type must be one of: ' . implode(', ', $valid_types));
     }
   }
 
@@ -335,7 +335,7 @@ class AkamaiClient extends Client {
       $this->domain = $domain;
     }
     else {
-      throw new \InvalidArgumentException('Domain must be one of: staging, production');
+      throw new \InvalidArgumentException('Domain must be one of: ' . implode(', ', $valid_domains));
     }
   }
 
