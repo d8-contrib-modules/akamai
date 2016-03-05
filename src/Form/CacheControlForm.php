@@ -9,6 +9,7 @@ namespace Drupal\akamai\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 
 /**
  * A simple form for testing the Akamai integration, or doing manual clears.
@@ -29,6 +30,13 @@ class CacheControlForm extends FormBase {
     $config = $this->config('akamai.settings');
     $form = array();
 
+    // Disable the form and show a message if we are not authenticated.
+    $form_disabled = FALSE;
+    if (\Drupal::state()->get('akamai.valid_credentials') == FALSE) {
+      $this->showAuthenticationWarning();
+      $form_disabled = TRUE;
+    }
+
     $form['paths'] = array(
       '#type' => 'textarea',
       '#title' => $this->t('Paths/URLs'),
@@ -41,7 +49,6 @@ class CacheControlForm extends FormBase {
     $form['domain_override'] = array(
       '#type' => 'select',
       '#title' => $this->t('Domain'),
-      '#default_value' => $config->get('akamai_domain'),
       '#options' => array(
         'production' => $this->t('Production'),
         'staging' => $this->t('Staging'),
@@ -54,7 +61,6 @@ class CacheControlForm extends FormBase {
     $form['action'] = array(
       '#type' => 'radios',
       '#title' => $this->t('Clearing Action Type'),
-      '#default_value' => $config->get('akamai_action'),
       '#options' => array(
         'remove' => $this->t('Remove'),
         'invalidate' => $this->t('Invalidate'),
@@ -66,6 +72,7 @@ class CacheControlForm extends FormBase {
     $form['submit'] = array(
       '#type' => 'submit',
       '#value' => $this->t('Start Refreshing Content'),
+      '#disabled' => $form_disabled,
     );
 
     return $form;
@@ -92,6 +99,17 @@ class CacheControlForm extends FormBase {
     else {
       drupal_set_message($this->t('There was an error clearing the cache. Check logs for further detail.'), 'error');
     }
+  }
+
+  /**
+   * Shows a message to the user if not authenticated to the Akamai API.
+   */
+  protected function showAuthenticationWarning() {
+    $url = Url::fromRoute('akamai.settings');
+    $link_text = $this->t('Update settings now');
+    $message = 'You are not authenticated to Akamai CCU v2. Until you authenticate, you will not be able to clear URLs from the Akamai cache. @link';
+    $message = $this->t($message, ['@link' => $this->l($link_text, $url)]);
+    drupal_set_message($message, 'warning');
   }
 
 }
