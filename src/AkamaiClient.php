@@ -100,6 +100,10 @@ class AkamaiClient extends Client {
     $this->drupalConfig = $config_factory->get('akamai.settings');
     $this->akamaiClientConfig = $this->createClientConfig();
 
+    // Set action to take based on configuration.
+    $this->setAction(key(array_filter($this->drupalConfig->get('action'))));
+    $this->setDomain(key(array_filter($this->drupalConfig->get('domain'))));
+
     // Create an authentication object so we can sign requests.
     $auth = AkamaiAuthentication::create($this->drupalConfig);
     // Set the auth credentials up.
