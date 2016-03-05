@@ -314,6 +314,9 @@ class AkamaiClient extends Client {
     if (in_array($action, $valid_actions)) {
       $this->action = $action;
     }
+    else {
+      throw new \InvalidArgumentException('Action must be one of: remove, invalidate');
+    }
   }
 
   public function setType($type) {
@@ -321,12 +324,18 @@ class AkamaiClient extends Client {
     if (in_array($type, $valid_types)) {
       $this->type = $type;
     }
+    else {
+      throw new \InvalidArgumentException('Type must be one of: cpcode, arl');
+    }
   }
 
   public function setDomain($domain) {
     $valid_domains = array('staging', 'production');
     if (in_array($domain, $valid_domains)) {
       $this->domain = $domain;
+    }
+    else {
+      throw new \InvalidArgumentException('Domain must be one of: staging, production');
     }
   }
 
