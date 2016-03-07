@@ -2,6 +2,7 @@
 
 /**
  * @file
+ * Contains \Drupal\akamai\AkamaiAuthentication.
  */
 
 
