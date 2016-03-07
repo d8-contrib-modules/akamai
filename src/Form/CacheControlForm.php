@@ -113,20 +113,20 @@ class CacheControlForm extends FormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $urls_to_clear = array();
     foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
-      $url = Url::fromUserInput( '/' . trim($path));
-      if($url->isRouted()){
+      $url = Url::fromUserInput('/' . trim($path));
+      if ($url->isRouted()) {
         $urls_to_clear[] = trim($path);
       }
       else {
-        $invalid_urls .= trim($path). ', ';
+        $invalid_urls .= trim($path) . ', ';
       }
     }
 
-    if(empty($urls_to_clear)) {
-      $form_state->setErrorByName('paths', $this->t('Please enter atleast one valid path'));
+    if (empty($urls_to_clear)) {
+      $form_state->setErrorByName('paths', $this->t('Please enter atleast one valid path for URL purging'));
     }
-    if(!empty($invalid_urls)) {
-      drupal_set_message($invalid_urls . ' is/are invalid path/paths', 'warning');
+    if (!empty($invalid_urls)) {
+      drupal_set_message($invalid_urls . $this->t('is/are invalid path/paths i.e above paths do not exist on the site and therefore will be ignored while purging', 'warning'));
     }
 
   }
@@ -137,8 +137,8 @@ class CacheControlForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $urls_to_clear = array();
     foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
-      $url = Url::fromUserInput( '/' . trim($path));
-      if($url->isRouted()){
+      $url = Url::fromUserInput('/' . trim($path));
+      if ($url->isRouted()) {
         $urls_to_clear[] = trim($path);
       }
     }
