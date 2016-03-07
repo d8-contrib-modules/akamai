@@ -6,7 +6,7 @@ akamai.settings:
   requirements:
     _permission: 'administer akamai'
 akamai.cache_clear:
-  path: 'admin/config/akamai/cache-control'
+  path: '/admin/config/development/performance/akamai-cache-clear'
   defaults:
     _form: '\Drupal\akamai\Form\CacheControlForm'
     _title: 'Akamai Cache Control'

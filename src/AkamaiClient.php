@@ -8,8 +8,10 @@ namespace Drupal\akamai;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
+use GuzzleHttp\Psr7\Request;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Exception\ClientException;
+use Drupal\Component\Serialization\Json;
 
 /**
  * Connects to the Akamai EdgeGrid.
@@ -54,6 +56,34 @@ class AkamaiClient extends Client {
   protected $logger;
 
   /**
+   * An action to take, either 'remove' or 'invalidate'.
+   *
+   * @var string
+   */
+  protected $action = 'remove';
+
+  /**
+   * Domain to clear, either 'production' or 'staging'.
+   *
+   * @var string
+   */
+  protected $domain = 'production';
+
+  /**
+   * Type of purge, either 'arl' or 'cpcode'.
+   *
+   * @var string
+   */
+  protected $type = 'arl';
+
+  /**
+   * The queue name to clear.
+   *
+   * @var string
+   */
+  protected $queue = 'default';
+
+  /**
    * AkamaiClient constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -69,6 +99,10 @@ class AkamaiClient extends Client {
     $this->logger = $logger;
     $this->drupalConfig = $config_factory->get('akamai.settings');
     $this->akamaiClientConfig = $this->createClientConfig();
+
+    // Set action to take based on configuration.
+    $this->setAction(key(array_filter($this->drupalConfig->get('action'))));
+    $this->setDomain(key(array_filter($this->drupalConfig->get('domain'))));
 
     // Create an authentication object so we can sign requests.
     $auth = AkamaiAuthentication::create($this->drupalConfig);
@@ -145,8 +179,6 @@ class AkamaiClient extends Client {
    *
    * @param array $objects
    *   A non-associative array of Akamai objects to clear.
-   * @param string $queue
-   *   The queue name to clear.
    *
    * @return GuzzleHttp\Psr7\Response
    *    Response to purge request.
@@ -154,16 +186,11 @@ class AkamaiClient extends Client {
    * @link https://developer.akamai.com/api/purge/ccu/reference.html
    * @link https://github.com/akamai-open/api-kickstart/blob/master/examples/php/ccu.php#L58
    */
-  protected function purgeRequest($objects, $queue = 'default') {
-    // Note that other parameters are defaulted:
-    // action: remove (default), invalidated
-    // domain: production (default), staging
-    // type: arl (default), cpcode.
-    // @todo Allow for customisation of request headers above.
+  protected function purgeRequest($objects) {
     try {
       $response = $this->request(
         'POST',
-        $this->apiBaseUrl . 'queues/' . $queue,
+        $this->apiBaseUrl . 'queues/' . $this->queue,
         ['json' => $this->createPurgeBody($objects)]
       );
       // Note that the response has useful data that we need to record.
@@ -177,15 +204,14 @@ class AkamaiClient extends Client {
       //  "detail": "Request accepted.",
       //  "pingAfterSeconds": 420
       //  }.
-      // @todo Keep track of purgeId, estimatedSeconds, pingAfterSeconds.
       return $response;
     }
     catch (ClientException $e) {
-      $this->logger->error($e->getMessage());
+      $this->logger->error($this->formatExceptionMessage($e));
+      // @todo better error handling
       // Throw $e;.
     }
   }
-
 
   /**
    * Add a URL to the internal list of URLs to purge.
@@ -209,6 +235,9 @@ class AkamaiClient extends Client {
   protected function createPurgeBody($urls) {
     return [
       'objects' => $urls,
+      'action' => $this->action,
+      'domain' => $this->domain,
+      'type' => $this->type,
     ];
   }
 
@@ -227,9 +256,8 @@ class AkamaiClient extends Client {
    * @link https://developer.akamai.com/api/purge/ccu/reference.html
    */
   public function getQueue($queue_name = 'default') {
-    return json_decode($this->_getQueue($queue_name)->getBody());
+    return Json::decode($this->_getQueue($queue_name)->getBody());
   }
-
 
   /**
    * Gets the raw Guzzle result of checking a queue.
@@ -264,6 +292,63 @@ class AkamaiClient extends Client {
    */
   protected function getPurgeStatus($purge_id) {
     // @todo Implement purge checking once we are tracking purge ids.
+    $request = new Request(
+      $this->apiBaseUrl . 'purges/' . $purge_id
+    );
+    try {
+      $response = $this->request($request);
+      return $response;
+    }
+    catch (ClientException $e) {
+      // @todo Better handling
+      $this->logger->log($this->formatExceptionMessage($e));
+      return FALSE;
+    }
+  }
+
+  public function setQueue($queue) {
+    $this->queue = $queue;
+  }
+
+  public function setAction($action) {
+    $valid_actions = array('remove', 'invalidate');
+    if (in_array($action, $valid_actions)) {
+      $this->action = $action;
+    }
+    else {
+      throw new \InvalidArgumentException('Action must be one of: ' . implode(', ', $valid_actions));
+    }
+  }
+
+  public function setType($type) {
+    $valid_types = array('cpcode', 'arl');
+    if (in_array($type, $valid_types)) {
+      $this->type = $type;
+    }
+    else {
+      throw new \InvalidArgumentException('Type must be one of: ' . implode(', ', $valid_types));
+    }
+  }
+
+  public function setDomain($domain) {
+    $valid_domains = array('staging', 'production');
+    if (in_array($domain, $valid_domains)) {
+      $this->domain = $domain;
+    }
+    else {
+      throw new \InvalidArgumentException('Domain must be one of: ' . implode(', ', $valid_domains));
+    }
+  }
+
+  protected function formatExceptionMessage(ClientException $e) {
+    // Get the full response to avoid truncation.
+    // @see https://laracasts.com/discuss/channels/general-discussion/guzzle-error-message-gets-truncated
+    $error_detail = Json::decode($e->getResponse()->getBody()->getContents());
+    $message = '';
+    foreach ($error_detail as $key => $value) {
+      $message .= "$key: $value " . PHP_EOL;
+    }
+    return $message;
   }
 
 }
