@@ -7,7 +7,7 @@
   "license": "GPL-2.0+",
   "minimum-stability": "dev",
   "require": {
-    "akamai-open/edgegrid-client": "0.4.2"
+    "akamai-open/edgegrid-client": "~0.4.2"
   }
 }
 
