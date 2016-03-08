@@ -186,7 +186,7 @@ class AkamaiClient extends Client {
           $urls_to_clear[] = trim($path);
         }
         else {
-          throw new \InvalidArgumentException($path . ' is invalid URLs');
+          throw new \InvalidArgumentException($path . ' is invalid URL. Please provide valid URL for purge request.');
         }
       }
       catch (InvalidArgumentException $e) {
