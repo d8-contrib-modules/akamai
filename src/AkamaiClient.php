@@ -97,11 +97,8 @@ class AkamaiClient extends Client {
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger = NULL) {
-    // @todo remove this
-    if (is_null($logger)) {
-      $logger = \Drupal::service('logger.channel.akamai');
-    }
+  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger) {
+
     $this->logger = $logger;
     $this->drupalConfig = $config_factory->get('akamai.settings');
     $this->akamaiClientConfig = $this->createClientConfig();
