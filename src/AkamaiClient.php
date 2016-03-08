@@ -13,6 +13,7 @@ use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Exception\ClientException;
 use Drupal\Component\Serialization\Json;
+use Drupal\akamai\StatusLog;
 
 /**
  * Connects to the Akamai EdgeGrid.
@@ -48,7 +49,7 @@ class AkamaiClient extends Client {
   protected $apiBaseUrl = '/ccu/v2/';
 
   /**
-   * A  list of objects to clear.
+   * A list of objects to clear.
    *
    * @var array
    */
@@ -60,6 +61,13 @@ class AkamaiClient extends Client {
    * @var \Drupal\Core\Logger\LoggerChannelInterface
    */
   protected $logger;
+
+  /**
+   * A purge status logger.
+   *
+   * @var StatusLog
+   */
+  protected $statusLogger;
 
   /**
    * An action to take, either 'remove' or 'invalidate'.
@@ -96,12 +104,14 @@ class AkamaiClient extends Client {
    *   The config factory.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
+   * @param StatusLog $status_logger
+   *   A status logger for tracking purge responses.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger) {
-
+  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger, StatusLog $status_logger) {
     $this->logger = $logger;
     $this->drupalConfig = $config_factory->get('akamai.settings');
     $this->akamaiClientConfig = $this->createClientConfig();
+    $this->statusLogger = $status_logger;
 
     // Create an authentication object so we can sign requests.
     $auth = AkamaiAuthentication::create($this->drupalConfig);
