@@ -309,33 +309,6 @@ class AkamaiClient extends Client {
     }
   }
 
-  /**
-   * Keeps track of response statuses so we can reference them later.
-   *
-   * @param Response $response
-   *   Response object, returned from a successful CCU call.
-   *
-   * @todo move status tracking into its own class
-   */
-  protected function saveResponseStatus($response) {
-    $statuses = $this->getResponseStatuses();
-    $response_body = Json::decode($response->getBody());
-    // Add a request made timestamp so we can compare later.
-    $response_body['request_made_at'] = REQUEST_TIME;
-    $statuses[] = $response_body;
-    \Drupal::state()->set(AkamaiClient::PURGE_STATUS_KEY, $statuses);
-  }
-
-  /**
-   * Return a list of response statuses.
-   *
-   * @return array
-   *   An array of responses.
-   */
-  public static function getResponseStatuses() {
-    return \Drupal::state()->get(AkamaiClient::PURGE_STATUS_KEY);
-  }
-
   public function setQueue($queue) {
     $this->queue = $queue;
   }
