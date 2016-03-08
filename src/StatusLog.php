@@ -17,6 +17,11 @@ use Drupal\Component\Serialization\Json;
 class StatusLog {
 
   /**
+   * State key for keeping track of purge statuses.
+   */
+  const PURGE_STATUS_KEY = 'akamai.purge_status';
+
+  /**
    * Config from akamai.settings.
    */
   protected $config;
@@ -47,13 +52,13 @@ class StatusLog {
    * @param Response $response
    *   Response object, returned from a successful CCU call.
    */
-  protected function saveResponseStatus(Response $response) {
+  public function saveResponseStatus(Response $response) {
     $statuses = $this->getResponseStatuses();
     $response_body = Json::decode($response->getBody());
     // Add a request made timestamp so we can compare later.
     $response_body['request_made_at'] = REQUEST_TIME;
     $statuses[] = $response_body;
-    \Drupal::state()->set(AkamaiClient::PURGE_STATUS_KEY, $statuses);
+    \Drupal::state()->set(StatusLog::PURGE_STATUS_KEY, $statuses);
   }
 
   /**
@@ -63,7 +68,7 @@ class StatusLog {
    *   An array of responses.
    */
   public static function getResponseStatuses() {
-    return \Drupal::state()->get(AkamaiClient::PURGE_STATUS_KEY);
+    return \Drupal::state()->get(StatusLog::PURGE_STATUS_KEY);
   }
 
 }

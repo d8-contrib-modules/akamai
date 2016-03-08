@@ -21,11 +21,6 @@ use Drupal\akamai\StatusLog;
 class AkamaiClient extends Client {
 
   /**
-   * State key for keeping track of purge statuses.
-   */
-  const PURGE_STATUS_KEY = 'akamai.purge_status';
-
-  /**
    * The settings configuration.
    *
    * @note GuzzleHttp\Client has its own private property called $config.
