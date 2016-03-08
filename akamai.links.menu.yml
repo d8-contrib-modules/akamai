@@ -3,7 +3,3 @@ akamai.settings:
   parent: system.admin_config_system
   description: 'Akamai CDN integration settings.'
   route_name: akamai.settings
-akamai.cache_clear:
-  title:  'Akamai Cache Control Utility'
-  description: 'Admin interface to flush Drupal resources from the Akamai cache'
-  route_name: akamai.cache_clear

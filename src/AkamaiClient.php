@@ -113,6 +113,10 @@ class AkamaiClient extends Client {
     $this->akamaiClientConfig = $this->createClientConfig();
     $this->statusLogger = $status_logger;
 
+    // Set action to take based on configuration.
+    $this->setAction(key(array_filter($this->drupalConfig->get('action'))));
+    $this->setDomain(key(array_filter($this->drupalConfig->get('domain'))));
+
     // Create an authentication object so we can sign requests.
     $auth = AkamaiAuthentication::create($this->drupalConfig);
     // Set the auth credentials up.
@@ -196,16 +200,12 @@ class AkamaiClient extends Client {
    * @link https://github.com/akamai-open/api-kickstart/blob/master/examples/php/ccu.php#L58
    */
   protected function purgeRequest($objects) {
-    $request = new Request(
-      'POST',
-      $this->apiBaseUrl . 'queues/' . $this->queue,
-      ['Content-Type:application/json'],
-      Json::encode($this->createPurgeBody($objects))
-    );
-
     try {
-      $response = $this->send($request);
-      $this->saveResponseStatus($response);
+      $response = $this->request(
+        'POST',
+        $this->apiBaseUrl . 'queues/' . $this->queue,
+        ['json' => $this->createPurgeBody($objects)]
+      );
       // Note that the response has useful data that we need to record.
       // Example response body:
       // {
@@ -217,10 +217,12 @@ class AkamaiClient extends Client {
       //  "detail": "Request accepted.",
       //  "pingAfterSeconds": 420
       //  }.
+      $this->statusLogger->saveResponseStatus($response);
       return $response;
     }
     catch (ClientException $e) {
-      $this->logger->error($e->getMessage());
+      $this->logger->error($this->formatExceptionMessage($e));
+      // @todo better error handling
       // Throw $e;.
     }
   }
@@ -314,7 +316,7 @@ class AkamaiClient extends Client {
     }
     catch (ClientException $e) {
       // @todo Better handling
-      $this->logger->log($e->getMessage());
+      $this->logger->log($this->formatExceptionMessage($e));
       return FALSE;
     }
   }
@@ -328,12 +330,18 @@ class AkamaiClient extends Client {
     if (in_array($action, $valid_actions)) {
       $this->action = $action;
     }
+    else {
+      throw new \InvalidArgumentException('Action must be one of: ' . implode(', ', $valid_actions));
+    }
   }
 
   public function setType($type) {
     $valid_types = array('cpcode', 'arl');
     if (in_array($type, $valid_types)) {
       $this->type = $type;
+    }
+    else {
+      throw new \InvalidArgumentException('Type must be one of: ' . implode(', ', $valid_types));
     }
   }
 
@@ -342,6 +350,20 @@ class AkamaiClient extends Client {
     if (in_array($domain, $valid_domains)) {
       $this->domain = $domain;
     }
+    else {
+      throw new \InvalidArgumentException('Domain must be one of: ' . implode(', ', $valid_domains));
+    }
+  }
+
+  protected function formatExceptionMessage(ClientException $e) {
+    // Get the full response to avoid truncation.
+    // @see https://laracasts.com/discuss/channels/general-discussion/guzzle-error-message-gets-truncated
+    $error_detail = Json::decode($e->getResponse()->getBody()->getContents());
+    $message = '';
+    foreach ($error_detail as $key => $value) {
+      $message .= "$key: $value " . PHP_EOL;
+    }
+    return $message;
   }
 
 }
