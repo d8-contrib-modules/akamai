@@ -125,8 +125,8 @@ class CacheControlForm extends FormBase {
       $form_state->setErrorByName('paths', $this->t('Please enter atleast one valid path for URL purging'));
     }
     if (!empty($invalid_urls)) {
-      $paths = implode(",",$invalid_urls);
-      $message = $paths . \Drupal::translation()->formatPlural(count($invalid_urls), ' path is invalid and does not exists', ' paths are invalid and do not exist') . $this->t(' on the site.Please provide valid URLs for purging.');
+      $paths = implode(",", $invalid_urls);
+      $message = $paths . \Drupal::translation()->formatPlural(count($invalid_urls), ' path is invalid and does not exist', ' paths are invalid and do not exist') . $this->t(' on the site.Please provide valid URLs for purging.');
       drupal_set_message($message, 'warning');
     }
 
