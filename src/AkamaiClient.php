@@ -8,10 +8,12 @@ namespace Drupal\akamai;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
+use Drupal\Core\Url;
 use GuzzleHttp\Psr7\Request;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Exception\ClientException;
 use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\UrlHelper;
 
 /**
  * Connects to the Akamai EdgeGrid.
@@ -171,7 +173,27 @@ class AkamaiClient extends Client {
    *    Response to purge request.
    */
   public function purgeUrls($urls) {
-    return $this->purgeRequest($urls);
+    $urls_to_clear = [];
+    global $base_url;
+    foreach ($urls as $path) {
+      if ($path[0] === '/') {
+        $path = ltrim($path, '/');
+      }
+      $full_path = $base_url . '/' . $path;
+      $url = Url::fromUserInput('/' . trim($path));
+      try {
+        if ($url->isRouted() && UrlHelper::isValid($full_path)) {
+          $urls_to_clear[] = trim($path);
+        }
+        else {
+          throw new \InvalidArgumentException($path . ' is invalid URLs');
+        }
+      }
+      catch (InvalidArgumentException $e) {
+        $this->logger->error($e->getMessage());
+      }
+    }
+    return $this->purgeRequest($urls_to_clear);
   }
 
   /**
@@ -306,10 +328,20 @@ class AkamaiClient extends Client {
     }
   }
 
+  /**
+   * Sets the queue.
+   *
+   * @param string $queue
+   */
   public function setQueue($queue) {
     $this->queue = $queue;
   }
 
+  /**
+   * Helper function to set the action for purge request.
+   *
+   * @param string $action
+   */
   public function setAction($action) {
     $valid_actions = array('remove', 'invalidate');
     if (in_array($action, $valid_actions)) {
@@ -320,6 +352,11 @@ class AkamaiClient extends Client {
     }
   }
 
+  /**
+   * Helper function to set type of the request.
+   *
+   * @param string $type
+   */
   public function setType($type) {
     $valid_types = array('cpcode', 'arl');
     if (in_array($type, $valid_types)) {
@@ -330,6 +367,11 @@ class AkamaiClient extends Client {
     }
   }
 
+  /**
+   * Sets the domain for purging data.
+   *
+   * @param string $domain
+   */
   public function setDomain($domain) {
     $valid_domains = array('staging', 'production');
     if (in_array($domain, $valid_domains)) {
@@ -340,6 +382,9 @@ class AkamaiClient extends Client {
     }
   }
 
+  /**
+   * Helper function to throw the exception.
+   */
   protected function formatExceptionMessage(ClientException $e) {
     // Get the full response to avoid truncation.
     // @see https://laracasts.com/discuss/channels/general-discussion/guzzle-error-message-gets-truncated
