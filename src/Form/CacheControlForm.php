@@ -66,10 +66,23 @@ class CacheControlForm extends FormBase {
       $form_disabled = TRUE;
     }
 
+    $settings_link = Url::fromRoute('akamai.settings');
+    $settings_link = $this->l($settings_link->getInternalPath(), $settings_link);
+    $paths_description = $this->t(
+      'Enter one URL per line. URL entries should be relative to the basepath
+      (e.g. node/1, content/pretty-title, sites/default/files/some/image.png).
+      Your basepath for Akamai is set as :basepath. If you would like to change
+      it, you can do so at @settings.',
+      [
+        ':basepath' => $config->get('basepath'),
+        '@settings' => $settings_link,
+      ]
+    );
+
     $form['paths'] = array(
       '#type' => 'textarea',
       '#title' => $this->t('Paths/URLs'),
-      '#description' => $this->t('Enter one URL per line. URL entries should be relative to the basepath. (e.g. node/1, content/pretty-title, sites/default/files/some/image.png'),
+      '#description' => $paths_description,
       '#required' => TRUE,
       '#default_value' => $form_state->get('paths'),
     );
@@ -121,6 +134,7 @@ class CacheControlForm extends FormBase {
         $invalid_urls[] = trim($path);
       }
     }
+
     if (empty($urls_to_clear)) {
       $form_state->setErrorByName('paths', $this->t('Please enter atleast one valid path for URL purging'));
     }
@@ -129,7 +143,6 @@ class CacheControlForm extends FormBase {
       $message = $paths . \Drupal::translation()->formatPlural(count($invalid_urls), ' path is invalid and does not exist', ' paths are invalid and do not exist') . $this->t(' on the site.Please provide valid URLs for purging.');
       drupal_set_message($message, 'warning');
     }
-
   }
 
   /**
@@ -138,10 +151,7 @@ class CacheControlForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $urls_to_clear = array();
     foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
-      $url = Url::fromUserInput('/' . trim($path));
-      if ($url->isRouted()) {
-        $urls_to_clear[] = trim($path);
-      }
+      $urls_to_clear[] = trim('/' . $path);
     }
     $action = $form_state->getValue('action');
     $this->akamaiClient->setAction($action);
