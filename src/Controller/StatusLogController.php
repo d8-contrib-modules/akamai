@@ -6,6 +6,7 @@
 namespace Drupal\akamai\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Datetime\DateFormatter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\akamai\StatusLog;
 
@@ -14,16 +15,24 @@ class StatusLogController extends ControllerBase {
   /**
    * Status logging service.
    *
-   * @var Drupal\akamai\StatusLog
+   * @var \Drupal\akamai\StatusLog
    */
   protected $statusLog;
+
+  /**
+   * Date formatter service.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatter
+   */
+  protected $dateFormatter;
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('akamai.statuslog')
+      $container->get('akamai.statuslog'),
+      $container->get('date.formatter')
     );
   }
 
@@ -34,8 +43,9 @@ class StatusLogController extends ControllerBase {
    * @param \Drupal\akamai\StatusLog $status_log
    *   A status log service, so we can reference statuses.
    */
-  public function __construct(StatusLog $status_log) {
+  public function __construct(StatusLog $status_log, DateFormatter $dateFormatter) {
     $this->statusLog = $status_log;
+    $this->dateFormatter = $dateFormatter;
   }
 
   public function listAction() {
@@ -44,7 +54,7 @@ class StatusLogController extends ControllerBase {
     if (count($statuses)) {
       foreach($statuses as $status) {
         $row = [];
-        $row[] = $status['request_made_at'];
+        $row[] = $this->dateFormatter->format($status['request_made_at'], 'html_datetime');
         $row[] = implode($status['urls_queued'], ', ');
         //$row[] = $status['progressUri'];
         $row[] = $status['purgeId'];
