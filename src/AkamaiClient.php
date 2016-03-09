@@ -173,26 +173,7 @@ class AkamaiClient extends Client {
    *    Response to purge request.
    */
   public function purgeUrls($urls) {
-    $urls_to_clear = [];
-    global $base_url;
-    foreach ($urls as $path) {
-      if ($path[0] === '/') {
-        $path = ltrim($path, '/');
-      }
-      $full_path = $base_url . '/' . $path;
-      $url = Url::fromUserInput('/' . trim($path));
-      try {
-        if ($url->isRouted() && UrlHelper::isValid($full_path)) {
-          $urls_to_clear[] = trim($path);
-        }
-        else {
-          throw new \InvalidArgumentException($path . ' is invalid URL. Please provide valid URL for purge request.');
-        }
-      }
-      catch (InvalidArgumentException $e) {
-        $this->logger->error($e->getMessage());
-      }
-    }
+    $urls_to_clear = $this->removeInvalidUrls($urls);
     return $this->purgeRequest($urls_to_clear);
   }
 
@@ -341,6 +322,7 @@ class AkamaiClient extends Client {
    * Helper function to set the action for purge request.
    *
    * @param string $action
+   *   Action to be taken while purging.
    */
   public function setAction($action) {
     $valid_actions = array('remove', 'invalidate');
@@ -356,6 +338,7 @@ class AkamaiClient extends Client {
    * Helper function to set type of the request.
    *
    * @param string $type
+   *   Type of cache bin to clear.
    */
   public function setType($type) {
     $valid_types = array('cpcode', 'arl');
@@ -371,6 +354,7 @@ class AkamaiClient extends Client {
    * Sets the domain for purging data.
    *
    * @param string $domain
+   *   Domain name of the purging instance.
    */
   public function setDomain($domain) {
     $valid_domains = array('staging', 'production');
@@ -384,6 +368,7 @@ class AkamaiClient extends Client {
 
   /**
    * Helper function to throw the exception.
+   *  Message to be logged.
    */
   protected function formatExceptionMessage(ClientException $e) {
     // Get the full response to avoid truncation.
@@ -394,6 +379,36 @@ class AkamaiClient extends Client {
       $message .= "$key: $value " . PHP_EOL;
     }
     return $message;
+  }
+
+  /**
+   * Removes invalid URLs from an array of URL.
+   *
+   * @param $urls
+   *   Array of URLs.
+   */
+  public function removeInvalidUrls($urls) {
+    $urls_to_clear = [];
+    $base_url = $this->drupalConfig->get('basepath') ?: $base_url;
+    foreach ($urls as $path) {
+      if ($path[0] === '/') {
+        $path = ltrim($path, '/');
+      }
+      $full_path = $base_url . '/' . $path;
+      $url = Url::fromUserInput('/' . trim($path));
+      try {
+        if ($url->isRouted() && UrlHelper::isValid($full_path)) {
+          $urls_to_clear[] = trim($path);
+        }
+        else {
+          throw new \InvalidArgumentException($path . ' is invalid URL. Please provide valid URL for purge request.');
+        }
+      }
+      catch (\InvalidArgumentException $e) {
+        $this->logger->error($e->getMessage());
+      }
+    }
+    return $urls_to_clear;
   }
 
 }
