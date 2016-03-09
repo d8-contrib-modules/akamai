@@ -8,6 +8,7 @@
 namespace Drupal\akamai\Form;
 
 use Drupal\akamai\AkamaiClient;
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -124,24 +125,32 @@ class CacheControlForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $urls_to_clear = array();
     foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
-      $url = Url::fromUserInput('/' . trim($path));
-      if ($url->isRouted()) {
-        $urls_to_clear[] = trim($path);
+      if (UrlHelper::isExternal($path)) {
+        $full_urls[] = trim($path);
       }
       else {
-        $invalid_urls[] = trim($path);
+        $url = Url::fromUserInput('/' . trim($path));
+        if ($url->isRouted()) {
+          $paths_to_clear[] = trim($path);
+        }
+        else {
+          $invalid_paths[] = trim($path);
+        }
       }
     }
 
-    if (empty($urls_to_clear)) {
-      $form_state->setErrorByName('paths', $this->t('Please enter atleast one valid path for URL purging'));
+    if (!empty($full_urls)) {
+      $form_state->setErrorByName('paths', $this->t('Please enter only relative paths, not full URLs.'));
     }
-    if (!empty($invalid_urls)) {
-      $paths = implode(",", $invalid_urls);
-      $message = $paths . \Drupal::translation()->formatPlural(count($invalid_urls), ' path is invalid and does not exist', ' paths are invalid and do not exist') . $this->t(' on the site.Please provide valid URLs for purging.');
-      drupal_set_message($message, 'warning');
+
+    if (empty($paths_to_clear)) {
+      $form_state->setErrorByName('paths', $this->t('Please enter at least one valid path for URL purging'));
+    }
+    if (!empty($invalid_paths)) {
+      $paths = implode(",", $invalid_paths);
+      $message = $paths . \Drupal::translation()->formatPlural(count($invalid_paths), ' path is invalid and does not exist', ' paths are invalid and do not exist') . $this->t(' on the site. Please provide valid URLs for purging.');
+      $form_state->setErrorByName('paths', $message);
     }
   }
 
