@@ -382,15 +382,17 @@ class AkamaiClient extends Client {
   }
 
   /**
-   * Removes invalid URLs from an array of URL.
+   * Removes invalid URLs from an array of URLs.
    *
    * @param $urls
    *   Array of URLs.
+   *
+   * @return array
+   *   Array of valid URLs to purge.
    */
   public function removeInvalidUrls($urls) {
     $urls_to_clear = [];
-    global $base_url;
-    $base_url = $this->drupalConfig->get('basepath') ?: $base_url;
+    $base_url = $this->drupalConfig->get('basepath');
     foreach ($urls as $path) {
       if ($path[0] === '/') {
         $path = ltrim($path, '/');
@@ -402,8 +404,7 @@ class AkamaiClient extends Client {
           $urls_to_clear[] = trim($path);
         }
         else {
-          drupal_set_message('Please check logs for invalid URLs purging requests.', 'warning');
-          throw new \InvalidArgumentException($path . ' is invalid URL. Please provide valid URL for purge request.');
+          throw new \InvalidArgumentException($path . ' is a not a URL handled by this Drupal site. Please provide a valid URL for purging.');
         }
       }
       catch (\InvalidArgumentException $e) {
