@@ -233,6 +233,10 @@ class AkamaiClient extends Client {
    *   An array suitable for sending to the Akamai purge endpoint.
    */
   protected function createPurgeBody($urls) {
+    // Append the basepath to all URLs. Akamai only accepts fully formed URLs.
+    foreach ($urls as &$url) {
+      $url = $this->drupalConfig->get('basepath') . $url;
+    }
     return [
       'objects' => $urls,
       'action' => $this->action,
