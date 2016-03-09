@@ -212,7 +212,7 @@ class AkamaiClient extends Client {
       //  "detail": "Request accepted.",
       //  "pingAfterSeconds": 420
       //  }.
-      $this->statusLogger->saveResponseStatus($response);
+      $this->statusLogger->saveResponseStatus($response, $objects);
       return $response;
     }
     catch (ClientException $e) {

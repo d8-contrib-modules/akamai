@@ -8,6 +8,7 @@ namespace Drupal\akamai;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Request;
 use Psr\Log\LoggerInterface;
 use Drupal\Component\Serialization\Json;
 
@@ -51,12 +52,15 @@ class StatusLog {
    *
    * @param Response $response
    *   Response object, returned from a successful CCU call.
+   * @param array $queued_urls
+   *   A list of URLs enqueued in this request.
    */
-  public function saveResponseStatus(Response $response) {
+  public function saveResponseStatus(Response $response, $queued_urls) {
     $statuses = $this->getResponseStatuses();
     $response_body = Json::decode($response->getBody());
     // Add a request made timestamp so we can compare later.
     $response_body['request_made_at'] = REQUEST_TIME;
+    $response_body['urls_queued'] = $queued_urls;
     $statuses[] = $response_body;
     \Drupal::state()->set(StatusLog::PURGE_STATUS_KEY, $statuses);
   }
