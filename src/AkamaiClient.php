@@ -402,6 +402,7 @@ class AkamaiClient extends Client {
           $urls_to_clear[] = trim($path);
         }
         else {
+          drupal_set_message('Please check logs for invalid URLs purging requests.', 'warning');
           throw new \InvalidArgumentException($path . ' is invalid URL. Please provide valid URL for purge request.');
         }
       }
