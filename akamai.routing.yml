@@ -5,6 +5,7 @@ akamai.settings:
     _title: 'Akamai Configuration'
   requirements:
     _permission: 'administer akamai'
+
 akamai.cache_clear:
   path: '/admin/config/development/performance/akamai-cache-clear'
   defaults:
@@ -12,3 +13,12 @@ akamai.cache_clear:
     _title: 'Akamai Cache Control'
   requirements:
     _permission: 'purge akamai cache'
+
+akamai.statuslog_list:
+  path: 'admin/reports/akamai/list'
+  defaults:
+    _controller: '\Drupal\akamai\Controller\StatusLogController::listAction'
+    _title: 'Akamai Purge Status'
+  requirements:
+    _permission: 'administer akamai'
+
