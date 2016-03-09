@@ -173,8 +173,7 @@ class AkamaiClient extends Client {
    *    Response to purge request.
    */
   public function purgeUrls($urls) {
-    $urls_to_clear = $this->removeInvalidUrls($urls);
-    return $this->purgeRequest($urls_to_clear);
+    return $this->purgeRequest($urls);
   }
 
   /**
@@ -190,6 +189,7 @@ class AkamaiClient extends Client {
    * @link https://github.com/akamai-open/api-kickstart/blob/master/examples/php/ccu.php#L58
    */
   protected function purgeRequest($objects) {
+    $objects = $this->removeInvalidUrls($objects);
     try {
       $response = $this->request(
         'POST',
@@ -389,6 +389,7 @@ class AkamaiClient extends Client {
    */
   public function removeInvalidUrls($urls) {
     $urls_to_clear = [];
+    global $base_url;
     $base_url = $this->drupalConfig->get('basepath') ?: $base_url;
     foreach ($urls as $path) {
       if ($path[0] === '/') {
