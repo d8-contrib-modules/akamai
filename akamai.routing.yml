@@ -1,5 +1,14 @@
-akamai.settings:
+# Create a block at admin/config to contain all Akamai pages.
+akamai.config_menu:
   path: 'admin/config/akamai'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Akamai'
+  requirements:
+    _permission: 'access administration pages'
+
+akamai.settings:
+  path: 'admin/config/akamai/config'
   defaults:
     _form: '\Drupal\akamai\Form\ConfigForm'
     _title: 'Akamai Configuration'
@@ -7,7 +16,7 @@ akamai.settings:
     _permission: 'administer akamai'
 
 akamai.cache_clear:
-  path: '/admin/config/development/performance/akamai-cache-clear'
+  path: '/admin/config/akamai/cache-clear'
   defaults:
     _form: '\Drupal\akamai\Form\CacheControlForm'
     _title: 'Akamai Cache Control'
@@ -15,7 +24,7 @@ akamai.cache_clear:
     _permission: 'purge akamai cache'
 
 akamai.statuslog_list:
-  path: 'admin/reports/akamai/list'
+  path: 'admin/config/akamai/list'
   defaults:
     _controller: '\Drupal\akamai\Controller\StatusLogController::listAction'
     _title: 'Akamai Purge Status'
