@@ -301,12 +301,12 @@ class AkamaiClient extends Client {
    * @param string $purge_id
    *   The UUID of the purge request to check.
    */
-  protected function getPurgeStatus($purge_id) {
-    $request = new Request(
-      $this->apiBaseUrl . 'purges/' . $purge_id
-    );
+  public function getPurgeStatus($purge_id) {
     try {
-      $response = $this->request($request);
+      $response = $this->request(
+        'GET',
+        $this->apiBaseUrl . 'purges/' . $purge_id
+      );
       return $response;
     }
     catch (ClientException $e) {

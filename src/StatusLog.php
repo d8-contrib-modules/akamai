@@ -8,12 +8,13 @@ namespace Drupal\akamai;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use GuzzleHttp\Psr7\Response;
-use GuzzleHttp\Psr7\Request;
 use Psr\Log\LoggerInterface;
 use Drupal\Component\Serialization\Json;
 
 /**
  * A logging utility for keeping track of Akamai purge statuses.
+ *
+ * @todo Make a PurgeStatus class instead of manipulating arrays.
  */
 class StatusLog {
 
@@ -73,6 +74,25 @@ class StatusLog {
    */
   public static function getResponseStatuses() {
     return \Drupal::state()->get(StatusLog::PURGE_STATUS_KEY);
+  }
+
+  /**
+   * Finds an individual request status with a matching purge ID.
+   *
+   * @param string $purge_id
+   *   Purge ID to search for.
+   *
+   * @return array|FALSE
+   *   The status array if found, FALSE if not.
+   */
+  public function getStatusByPurgeId($purge_id) {
+    $statuses = $this->getResponseStatuses();
+    foreach ($statuses as $status) {
+      if ($status['purgeId'] == $purge_id) {
+        return $status;
+      }
+    }
+    return FALSE;
   }
 
 }

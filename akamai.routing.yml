@@ -1,3 +1,7 @@
+#
+# Forms and UI elements.
+#
+
 # Create a block at admin/config to contain all Akamai pages.
 akamai.config_menu:
   path: 'admin/config/akamai'
@@ -31,3 +35,14 @@ akamai.statuslog_list:
   requirements:
     _permission: 'administer akamai'
 
+#
+#
+#
+
+akamai.statuslog_purge_check:
+  path: 'admin/akamai/status/purge/{purge_id}'
+  defaults:
+    _controller: '\Drupal\akamai\Controller\StatusLogController::checkPurgeAction'
+    _title_callback: '\Drupal\akamai\Controller\StatusLogController::checkPurgeTitle'
+  requirements:
+      _permission: 'administer akamai'
