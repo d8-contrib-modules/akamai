@@ -141,7 +141,7 @@ class AkamaiClient extends Client {
    */
   public function isAuthorized() {
     try {
-      $response = $this->_getQueue();
+      $response = $this->doGetQueue();
     }
     catch (\GuzzleHttp\Exception\ClientException $e) {
       // @todo better handling
@@ -198,15 +198,17 @@ class AkamaiClient extends Client {
       );
       // Note that the response has useful data that we need to record.
       // Example response body:
+      // @code
       // {
-      //  "estimatedSeconds": 420,
-      //  "progressUri": "/ccu/v2/purges/57799d8b-10e4-11e4-9088-62ece60caaf0",
-      //  "purgeId": "57799d8b-10e4-11e4-9088-62ece60caaf0",
-      //  "supportId": "17PY1405953363409286-284546144",
-      //  "httpStatus": 201,
-      //  "detail": "Request accepted.",
-      //  "pingAfterSeconds": 420
-      //  }.
+      //   "estimatedSeconds": 420,
+      //   "progressUri": "/ccu/v2/purges/57799d8b-10e4-11e4-9088-62ece60caaf0",
+      //   "purgeId": "57799d8b-10e4-11e4-9088-62ece60caaf0",
+      //   "supportId": "17PY1405953363409286-284546144",
+      //   "httpStatus": 201,
+      //   "detail": "Request accepted.",
+      //   "pingAfterSeconds": 420
+      // }
+      // @endcode
       return $response;
     }
     catch (ClientException $e) {
@@ -263,7 +265,7 @@ class AkamaiClient extends Client {
    * @link https://developer.akamai.com/api/purge/ccu/reference.html
    */
   public function getQueue($queue_name = 'default') {
-    return Json::decode($this->_getQueue($queue_name)->getBody());
+    return Json::decode($this->doGetQueue($queue_name)->getBody());
   }
 
   /**
@@ -276,8 +278,9 @@ class AkamaiClient extends Client {
    *   The queue name to check. Defaults to 'default'.
    *
    * @return \Psr\Http\Message\ResponseInterface
+   *   The HTTP response.
    */
-  private function _getQueue($queue_name = 'default') {
+  private function doGetQueue($queue_name = 'default') {
     return $this->get("/ccu/v2/queues/{$queue_name}");
   }
 
@@ -339,10 +342,10 @@ class AkamaiClient extends Client {
   }
 
   /**
-   * Helper function to set type of the request.
+   * Sets the type of purge.
    *
    * @param string $type
-   *   Type of cache bin to clear.
+   *   The type of purge, either 'arl' or 'cpcode'.
    */
   public function setType($type) {
     $valid_types = array('cpcode', 'arl');
@@ -355,11 +358,11 @@ class AkamaiClient extends Client {
   }
 
   /**
-   * Sets the domain for purging data.
+   * Sets the domain to clear.
    *
    * @param string $domain
-   *   Domain name of the purging instance.
-   */
+   *   The domain to clear, either 'production' or 'staging'.
+  */
   public function setDomain($domain) {
     $valid_domains = array('staging', 'production');
     if (in_array($domain, $valid_domains)) {
@@ -371,8 +374,13 @@ class AkamaiClient extends Client {
   }
 
   /**
-   * Helper function to throw the exception.
-   *  Message to be logged.
+   * Formats a JSON error response into a string.
+   *
+   * @param \GuzzleHttp\Exception\ClientException $e
+   *   The ClientException containing the JSON error response.
+   *
+   * @return string
+   *   The formatted error message as a string.
    */
   protected function formatExceptionMessage(ClientException $e) {
     // Get the full response to avoid truncation.

@@ -5,7 +5,6 @@
  * Contains \Drupal\akamai\AkamaiAuthentication.
  */
 
-
 namespace Drupal\akamai;
 
 use Drupal\Core\Config\Config;
