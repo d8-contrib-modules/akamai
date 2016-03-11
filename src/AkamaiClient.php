@@ -156,7 +156,7 @@ class AkamaiClient extends Client {
    * @param string $url
    *   A URL to clear.
    *
-   * @return GuzzleHttp\Psr7\Response
+   * @return \GuzzleHttp\Psr7\Response
    *    Response to purge request.
    */
   public function purgeUrl($url) {
@@ -169,7 +169,7 @@ class AkamaiClient extends Client {
    * @param array $urls
    *   List of URLs to purge.
    *
-   * @return GuzzleHttp\Psr7\Response
+   * @return \GuzzleHttp\Psr7\Response
    *    Response to purge request.
    */
   public function purgeUrls($urls) {
@@ -182,7 +182,7 @@ class AkamaiClient extends Client {
    * @param array $objects
    *   A non-associative array of Akamai objects to clear.
    *
-   * @return GuzzleHttp\Psr7\Response
+   * @return \GuzzleHttp\Psr7\Response
    *    Response to purge request.
    *
    * @link https://developer.akamai.com/api/purge/ccu/reference.html
@@ -223,9 +223,12 @@ class AkamaiClient extends Client {
    *
    * @param string $url
    *   A URL to clear.
+   *
+   * @return $this
    */
   protected function addToPurgeList($url) {
     $this->purgeList[] = $url;
+    return $this;
   }
 
   /**
@@ -317,12 +320,35 @@ class AkamaiClient extends Client {
   }
 
   /**
-   * Sets the queue.
+   * Sets the queue name.
    *
    * @param string $queue
+   *   The queue name.
+   *
+   * @return $this
    */
   public function setQueue($queue) {
     $this->queue = $queue;
+    return $this;
+  }
+
+  /**
+   * Sets the type of purge.
+   *
+   * @param string $type
+   *   The type of purge, either 'arl' or 'cpcode'.
+   *
+   * @return $this
+   */
+  public function setType($type) {
+    $valid_types = array('cpcode', 'arl');
+    if (in_array($type, $valid_types)) {
+      $this->type = $type;
+    }
+    else {
+      throw new \InvalidArgumentException('Type must be one of: ' . implode(', ', $valid_types));
+    }
+    return $this;
   }
 
   /**
@@ -342,27 +368,13 @@ class AkamaiClient extends Client {
   }
 
   /**
-   * Sets the type of purge.
-   *
-   * @param string $type
-   *   The type of purge, either 'arl' or 'cpcode'.
-   */
-  public function setType($type) {
-    $valid_types = array('cpcode', 'arl');
-    if (in_array($type, $valid_types)) {
-      $this->type = $type;
-    }
-    else {
-      throw new \InvalidArgumentException('Type must be one of: ' . implode(', ', $valid_types));
-    }
-  }
-
-  /**
    * Sets the domain to clear.
    *
    * @param string $domain
    *   The domain to clear, either 'production' or 'staging'.
-  */
+   *
+   * @return $this
+   */
   public function setDomain($domain) {
     $valid_domains = array('staging', 'production');
     if (in_array($domain, $valid_domains)) {
@@ -371,6 +383,7 @@ class AkamaiClient extends Client {
     else {
       throw new \InvalidArgumentException('Domain must be one of: ' . implode(', ', $valid_domains));
     }
+    return $this;
   }
 
   /**
@@ -396,10 +409,10 @@ class AkamaiClient extends Client {
   /**
    * Removes invalid URLs from an array of URLs.
    *
-   * @param $urls
+   * @param string[] $urls
    *   Array of URLs.
    *
-   * @return array
+   * @return string[]
    *   Array of valid URLs to purge.
    */
   public function removeInvalidUrls($urls) {
