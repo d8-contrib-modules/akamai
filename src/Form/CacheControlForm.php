@@ -126,6 +126,9 @@ class CacheControlForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
+      if ($path[0] === '/') {
+        $path = ltrim($path, '/');
+      }
       if (UrlHelper::isExternal($path)) {
         $full_urls[] = trim($path);
       }
