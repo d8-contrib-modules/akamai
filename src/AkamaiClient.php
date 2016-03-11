@@ -8,10 +8,12 @@ namespace Drupal\akamai;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
+use Drupal\Core\Url;
 use GuzzleHttp\Psr7\Request;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Exception\ClientException;
 use Drupal\Component\Serialization\Json;
+use Drupal\Component\Utility\UrlHelper;
 
 /**
  * Connects to the Akamai EdgeGrid.
@@ -187,6 +189,7 @@ class AkamaiClient extends Client {
    * @link https://github.com/akamai-open/api-kickstart/blob/master/examples/php/ccu.php#L58
    */
   protected function purgeRequest($objects) {
+    $objects = $this->removeInvalidUrls($objects);
     try {
       $response = $this->request(
         'POST',
@@ -235,7 +238,7 @@ class AkamaiClient extends Client {
   protected function createPurgeBody($urls) {
     // Append the basepath to all URLs. Akamai only accepts fully formed URLs.
     foreach ($urls as &$url) {
-      $url = $this->drupalConfig->get('basepath') . $url;
+      $url = $this->drupalConfig->get('basepath') .'/'. $url;
     }
     return [
       'objects' => $urls,
@@ -310,10 +313,21 @@ class AkamaiClient extends Client {
     }
   }
 
+  /**
+   * Sets the queue.
+   *
+   * @param string $queue
+   */
   public function setQueue($queue) {
     $this->queue = $queue;
   }
 
+  /**
+   * Helper function to set the action for purge request.
+   *
+   * @param string $action
+   *   Action to be taken while purging.
+   */
   public function setAction($action) {
     $valid_actions = array('remove', 'invalidate');
     if (in_array($action, $valid_actions)) {
@@ -324,6 +338,12 @@ class AkamaiClient extends Client {
     }
   }
 
+  /**
+   * Helper function to set type of the request.
+   *
+   * @param string $type
+   *   Type of cache bin to clear.
+   */
   public function setType($type) {
     $valid_types = array('cpcode', 'arl');
     if (in_array($type, $valid_types)) {
@@ -334,6 +354,12 @@ class AkamaiClient extends Client {
     }
   }
 
+  /**
+   * Sets the domain for purging data.
+   *
+   * @param string $domain
+   *   Domain name of the purging instance.
+   */
   public function setDomain($domain) {
     $valid_domains = array('staging', 'production');
     if (in_array($domain, $valid_domains)) {
@@ -344,6 +370,10 @@ class AkamaiClient extends Client {
     }
   }
 
+  /**
+   * Helper function to throw the exception.
+   *  Message to be logged.
+   */
   protected function formatExceptionMessage(ClientException $e) {
     // Get the full response to avoid truncation.
     // @see https://laracasts.com/discuss/channels/general-discussion/guzzle-error-message-gets-truncated
@@ -353,6 +383,39 @@ class AkamaiClient extends Client {
       $message .= "$key: $value " . PHP_EOL;
     }
     return $message;
+  }
+
+  /**
+   * Removes invalid URLs from an array of URLs.
+   *
+   * @param $urls
+   *   Array of URLs.
+   *
+   * @return array
+   *   Array of valid URLs to purge.
+   */
+  public function removeInvalidUrls($urls) {
+    $urls_to_clear = [];
+    $base_url = $this->drupalConfig->get('basepath');
+    foreach ($urls as $path) {
+      if ($path[0] === '/') {
+        $path = ltrim($path, '/');
+      }
+      $full_path = $base_url . '/' . $path;
+      $url = Url::fromUserInput('/' . trim($path));
+      try {
+        if ($url->isRouted() && UrlHelper::isValid($full_path)) {
+          $urls_to_clear[] = trim($path);
+        }
+        else {
+          throw new \InvalidArgumentException($path . ' is a not a URL handled by this Drupal site. Please provide a valid URL for purging.');
+        }
+      }
+      catch (\InvalidArgumentException $e) {
+        $this->logger->error($e->getMessage());
+      }
+    }
+    return $urls_to_clear;
   }
 
 }
