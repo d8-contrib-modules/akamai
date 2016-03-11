@@ -238,7 +238,7 @@ class AkamaiClient extends Client {
   protected function createPurgeBody($urls) {
     // Append the basepath to all URLs. Akamai only accepts fully formed URLs.
     foreach ($urls as &$url) {
-      $url = $this->drupalConfig->get('basepath') . $url;
+      $url = $this->drupalConfig->get('basepath') .'/'. $url;
     }
     return [
       'objects' => $urls,
