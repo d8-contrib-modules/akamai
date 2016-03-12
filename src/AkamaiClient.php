@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
 use GuzzleHttp\Exception\ClientException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\UrlHelper;
-use Drupal\akamai\StatusLog;
+use Drupal\akamai\StatusStorage;
 
 /**
  * Connects to the Akamai EdgeGrid.
@@ -62,9 +62,9 @@ class AkamaiClient extends Client {
   /**
    * A purge status logger.
    *
-   * @var StatusLog
+   * @var StatusStorage
    */
-  protected $statusLogger;
+  protected $statusStorage;
 
   /**
    * An action to take, either 'remove' or 'invalidate'.
@@ -101,14 +101,14 @@ class AkamaiClient extends Client {
    *   The config factory.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
-   * @param StatusLog $status_logger
+   * @param StatusStorage $status_storage
    *   A status logger for tracking purge responses.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger, StatusLog $status_logger) {
+  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger, StatusStorage $status_storage) {
     $this->logger = $logger;
     $this->drupalConfig = $config_factory->get('akamai.settings');
     $this->akamaiClientConfig = $this->createClientConfig();
-    $this->statusLogger = $status_logger;
+    $this->statusStorage = $status_storage;
 
     // Set action to take based on configuration.
     $this->setAction(key(array_filter($this->drupalConfig->get('action'))));
@@ -215,7 +215,7 @@ class AkamaiClient extends Client {
       //  "detail": "Request accepted.",
       //  "pingAfterSeconds": 420
       //  }.
-      $this->statusLogger->saveResponseStatus($response, $objects);
+      $this->statusStorage->saveResponseStatus($response, $objects);
       return $response;
     }
     catch (ClientException $e) {
@@ -266,8 +266,8 @@ class AkamaiClient extends Client {
    * @param string $queue_name
    *   The queue name to check. Defaults to 'default'.
    *
-   * @return object
-   *    Response body of request.
+   * @return array
+   *    Response body of request as associative array.
    *
    * @link https://api.ccu.akamai.com/ccu/v2/docs/#section_CheckingQueueLength
    * @link https://developer.akamai.com/api/purge/ccu/reference.html
@@ -275,7 +275,6 @@ class AkamaiClient extends Client {
   public function getQueue($queue_name = 'default') {
     return Json::decode($this->_getQueue($queue_name)->getBody());
   }
-
 
   /**
    * Gets the raw Guzzle result of checking a queue.
@@ -289,7 +288,7 @@ class AkamaiClient extends Client {
    * @return \Psr\Http\Message\ResponseInterface
    */
   private function _getQueue($queue_name = 'default') {
-    return $this->get("/ccu/v2/queues/{$queue_name}");
+    return $this->get($this->apiBaseUrl . "queues/{$queue_name}");
   }
 
   /**
@@ -299,7 +298,7 @@ class AkamaiClient extends Client {
    *   A count of the remaining items in the purge queue.
    */
   public function getQueueLength() {
-    return $this->getQueue()->queueLength;
+    return $this->getQueue()['queueLength'];
   }
 
   /**

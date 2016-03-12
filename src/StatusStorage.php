@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Contains Drupal\akamai\StatusLog.
+ * Contains Drupal\akamai\StatusStorage.
  */
 
 namespace Drupal\akamai;
@@ -16,7 +16,7 @@ use Drupal\Component\Serialization\Json;
  *
  * @todo Make a PurgeStatus class instead of manipulating arrays.
  */
-class StatusLog {
+class StatusStorage {
 
   /**
    * State key for keeping track of purge statuses.
@@ -57,23 +57,47 @@ class StatusLog {
    *   A list of URLs enqueued in this request.
    */
   public function saveResponseStatus(Response $response, $queued_urls) {
-    $statuses = $this->getResponseStatuses();
+    // @todo note that several individual web service calls may be consolidated
+    // into a single request with a single purge id.
+    // We need to add to the existing
     $response_body = Json::decode($response->getBody());
     // Add a request made timestamp so we can compare later.
-    $response_body['request_made_at'] = REQUEST_TIME;
     $response_body['urls_queued'] = $queued_urls;
-    $statuses[] = $response_body;
-    \Drupal::state()->set(StatusLog::PURGE_STATUS_KEY, $statuses);
+    $this->save($response_body);
   }
+
+
+  public function save($status) {
+    $statuses = $this->getResponseStatuses();
+    $status['request_made_at'] = REQUEST_TIME;
+    $statuses[$status['purgeId']][] = $status;
+    dpm($status, 'status');
+    dpm($statuses, 'statuses');
+    // Key the response log by the purge UUID.
+    // Note that one purge may contain several requests.
+    $this->saveStatuses($statuses);
+  }
+
+
+  /**
+   * Saves an array of stasues to state.
+   *
+   * @param array $statuses
+   *   An array of status arrays.
+   */
+  protected function saveStatuses($statuses) {
+    \Drupal::state()->set(StatusStorage::PURGE_STATUS_KEY, $statuses);
+  }
+
 
   /**
    * Return a list of response statuses.
    *
    * @return array
-   *   An array of responses.
+   *   An array of status arrays.
    */
   public static function getResponseStatuses() {
-    return \Drupal::state()->get(StatusLog::PURGE_STATUS_KEY);
+    return \Drupal::state()->get(StatusStorage::PURGE_STATUS_KEY);
   }
 
   /**
@@ -85,14 +109,40 @@ class StatusLog {
    * @return array|FALSE
    *   The status array if found, FALSE if not.
    */
-  public function getStatusByPurgeId($purge_id) {
+  protected function getStatusByPurgeId($purge_id) {
     $statuses = $this->getResponseStatuses();
-    foreach ($statuses as $status) {
-      if ($status['purgeId'] == $purge_id) {
-        return $status;
-      }
+    if (array_key_exists($purge_id, $statuses)) {
+      return $statuses[$purge_id];
     }
     return FALSE;
+  }
+
+  public function getStatus($purge_id) {
+    return $this->getStatusByPurgeId($purge_id);
+  }
+
+  /**
+   * Deletes a purge ID from the status log.
+   *
+   * @param string $purge_id
+   *   Purge ID to delete.
+   *
+   * @return boolean
+   *   TRUE if deleted, FALSE if not.
+   */
+  protected function deleteStatusByPurgeId($purge_id) {
+    $statuses = $this->getResponseStatuses();
+    unset($statuses[$purge_id]);
+    $this->saveStatuses($statuses);
+  }
+
+  public function delete($id) {
+    $this->deleteStatusByPurgeId($id);
+  }
+
+
+  public function purgeComplete($purge_id) {
+    return $this->getStatusByPurgeId($purge_id)[''];
   }
 
 }

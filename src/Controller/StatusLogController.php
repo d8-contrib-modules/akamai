@@ -6,10 +6,11 @@
 
 namespace Drupal\akamai\Controller;
 
+use Drupal\akamai\PurgeStatus;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Datetime\DateFormatter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\akamai\StatusLog;
+use Drupal\akamai\StatusStorage;
 use Drupal\Core\Url;
 use Drupal\Component\Serialization\Json;
 
@@ -22,9 +23,9 @@ class StatusLogController extends ControllerBase {
   /**
    * Status logging service.
    *
-   * @var \Drupal\akamai\StatusLog
+   * @var \Drupal\akamai\StatusStorage
    */
-  protected $statusLog;
+  protected $statusStorage;
 
   /**
    * Date formatter service.
@@ -38,7 +39,7 @@ class StatusLogController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('akamai.statuslog'),
+      $container->get('akamai.status_storage'),
       $container->get('date.formatter')
     );
   }
@@ -47,11 +48,11 @@ class StatusLogController extends ControllerBase {
   /**
    * StatusLogController constructor.
    *
-   * @param \Drupal\akamai\StatusLog $status_log
-   *   A status log service, so we can reference statuses.
+   * @param \Drupal\akamai\StatusStorage $status_storage
+   *   A status storage service, so we can reference statuses.
    */
-  public function __construct(StatusLog $status_log, DateFormatter $dateFormatter) {
-    $this->statusLog = $status_log;
+  public function __construct(StatusStorage $status_storage, DateFormatter $dateFormatter) {
+    $this->statusStorage = $status_storage;
     $this->dateFormatter = $dateFormatter;
   }
 
@@ -62,18 +63,21 @@ class StatusLogController extends ControllerBase {
    *   A table render array of all requests statuses.
    */
   public function listAction() {
-    $statuses = $this->statusLog->getResponseStatuses();
+
+    $statuses = $this->statusStorage->getResponseStatuses();
     $rows = [];
     if (count($statuses)) {
       foreach ($statuses as $status) {
+        // Get the most recent request sent regarding this purge.
+        $status = array_pop($status);
         $rows[] = $this->statusAsTableRow($status);
       }
     }
     else {
       $rows[] = [
         [
-          'data' => $this->t('No purges found'),
-          'colspan' => 6,
+          'data' => $this->t('No purges found.'),
+          'colspan' => 5,
         ],
       ];
     }
@@ -119,15 +123,14 @@ class StatusLogController extends ControllerBase {
     return [
       // @todo set responsive priority. @see theme.inc
       $this->t('Request made'),
-      $this->t('URL'),
+      $this->t('URLs'),
       $this->t('Purge ID'),
       $this->t('Support ID'),
-      $this->t('HTTP Code'),
-      $this->t('Response Message'),
-      $this->t('Ping after seconds'),
+      //$this->t('HTTP Code'),
+      $this->t('Purge Status'),
+      //$this->t('Ping after seconds'),
     ];
   }
-
 
   /**
    * Callback for a page showing the status of a purge.
