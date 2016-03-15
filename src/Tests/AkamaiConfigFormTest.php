@@ -47,7 +47,7 @@ class AkamaiConfigFormTest extends WebTestBase {
    * Tests that Akamai Configuration Form.
    */
   public function testConfigForm() {
-    $edit['basepath'] = 'node/1';
+    $edit['basepath'] = 'http://www.example.com';
     $edit['timeout'] = 20;
     $edit['domain'] = 'staging';
     $edit['action'] = 'invalidate';
