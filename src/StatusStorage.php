@@ -66,21 +66,23 @@ class StatusStorage {
     $this->save($response_body);
   }
 
-
+  /**
+   * Saves an individual status response.
+   *
+   * @param array $status
+   *   A raw status array returned from a client request.
+   */
   public function save($status) {
     $statuses = $this->getResponseStatuses();
     $status['request_made_at'] = REQUEST_TIME;
     $statuses[$status['purgeId']][] = $status;
-    dpm($status, 'status');
-    dpm($statuses, 'statuses');
     // Key the response log by the purge UUID.
     // Note that one purge may contain several requests.
     $this->saveStatuses($statuses);
   }
 
-
   /**
-   * Saves an array of stasues to state.
+   * Saves an array of statuses to state.
    *
    * @param array $statuses
    *   An array of status arrays.
@@ -88,7 +90,6 @@ class StatusStorage {
   protected function saveStatuses($statuses) {
     \Drupal::state()->set(StatusStorage::PURGE_STATUS_KEY, $statuses);
   }
-
 
   /**
    * Return a list of response statuses.
@@ -117,7 +118,10 @@ class StatusStorage {
     return FALSE;
   }
 
-  public function getStatus($purge_id) {
+  /**
+   * {@inheritdoc}
+   */
+  public function get($purge_id) {
     return $this->getStatusByPurgeId($purge_id);
   }
 
@@ -126,9 +130,6 @@ class StatusStorage {
    *
    * @param string $purge_id
    *   Purge ID to delete.
-   *
-   * @return boolean
-   *   TRUE if deleted, FALSE if not.
    */
   protected function deleteStatusByPurgeId($purge_id) {
     $statuses = $this->getResponseStatuses();
@@ -136,13 +137,11 @@ class StatusStorage {
     $this->saveStatuses($statuses);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function delete($id) {
     $this->deleteStatusByPurgeId($id);
-  }
-
-
-  public function purgeComplete($purge_id) {
-    return $this->getStatusByPurgeId($purge_id)[''];
   }
 
 }

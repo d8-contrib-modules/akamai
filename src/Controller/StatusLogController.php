@@ -44,16 +44,15 @@ class StatusLogController extends ControllerBase {
     );
   }
 
-
   /**
    * StatusLogController constructor.
    *
    * @param \Drupal\akamai\StatusStorage $status_storage
    *   A status storage service, so we can reference statuses.
    */
-  public function __construct(StatusStorage $status_storage, DateFormatter $dateFormatter) {
+  public function __construct(StatusStorage $status_storage, DateFormatter $date_formatter) {
     $this->statusStorage = $status_storage;
-    $this->dateFormatter = $dateFormatter;
+    $this->dateFormatter = $date_formatter;
   }
 
   /**
@@ -63,13 +62,15 @@ class StatusLogController extends ControllerBase {
    *   A table render array of all requests statuses.
    */
   public function listAction() {
+    $client = \Drupal::service('akamai.edgegridclient');
+    $length = $client->getQueueLength();
 
     $statuses = $this->statusStorage->getResponseStatuses();
     $rows = [];
     if (count($statuses)) {
       foreach ($statuses as $status) {
         // Get the most recent request sent regarding this purge.
-        $status = array_pop($status);
+        $status = new PurgeStatus($status);
         $rows[] = $this->statusAsTableRow($status);
       }
     }
@@ -89,27 +90,31 @@ class StatusLogController extends ControllerBase {
       '#sticky' => TRUE,
     ];
 
+    $build[] = [
+      '#markup' => $this->t('Items remaining in Akamai purge queue: %length', ['%length' => $length]),
+    ];
+
     return $build;
   }
 
   /**
    * Creates a table row from a status.
    *
-   * @param array $status
+   * @param PurgeStatus $status
    *   A status as an array.
    *
    * @return array
    *   An array suitable for embedding as table row.
    */
-  protected function statusAsTableRow($status) {
-    $url = Url::fromRoute('akamai.statuslog_purge_check', ['purge_id' => $status['purgeId']]);
-    $row[] = $this->dateFormatter->format($status['request_made_at'], 'html_datetime');
-    $row[] = implode($status['urls_queued'], ', ');
-    $row[] = $this->l($status['purgeId'], $url);
-    $row[] = $status['supportId'];
-    $row[] = $status['httpStatus'];
-    $row[] = $status['detail'];
-    $row[] = $status['pingAfterSeconds'];
+  protected function statusAsTableRow(PurgeStatus $status) {
+    $url = Url::fromRoute('akamai.statuslog_purge_check', ['purge_id' => $status->getPurgeId()]);
+
+    $row[] = $this->dateFormatter->format($status->getLastCheckedTime(), 'html_datetime');
+    $row[] = implode($status->getUrls(), ', ');
+    $row[] = $this->l($status->getPurgeId(), $url);
+    $row[] = $status->getSupportId();
+    $row[] = $status->getDescription();
+
     return $row;
   }
 
@@ -126,9 +131,7 @@ class StatusLogController extends ControllerBase {
       $this->t('URLs'),
       $this->t('Purge ID'),
       $this->t('Support ID'),
-      //$this->t('HTTP Code'),
       $this->t('Purge Status'),
-      //$this->t('Ping after seconds'),
     ];
   }
 
@@ -142,27 +145,54 @@ class StatusLogController extends ControllerBase {
    *   A render array with purge details.
    */
   public function checkPurgeAction($purge_id) {
+    // @todo convert to breadcrumb
+    $build[]['#markup'] = '<p>' . $this->l($this->t('Back to list'), Url::fromRoute('akamai.statuslog_list')) . '</p>';
+
     // @todo inject
     $client = \Drupal::service('akamai.edgegridclient');
-    $build[] = $this->purgeStatusTable(Json::decode($client->getPurgeStatus($purge_id)->getBody()));
+    // Get a new status update.
+    $status = Json::decode($client->getPurgeStatus($purge_id)->getBody());
+    // Save it in storage.
+    $this->statusStorage->save($status);
+    // Now get it back so we can use object functions.
+    $status = new PurgeStatus($this->statusStorage->get($purge_id));
+
+    $build[] = $this->purgeStatusTable($status);
+
+    $links['delete'] = [
+      'title' => $this->t('Delete this log entry'),
+      'url' => Url::fromRoute('akamai.statuslog_delete', ['purge_id' => $purge_id]),
+    ];
+    $build[] = [
+      '#type' => 'operations',
+      '#links' => $links,
+    ];
+
     return $build;
   }
 
   /**
    * Builds a table render array for an individual purge request.
    *
-   * @param array $status
+   * @param PurgeStatus $status
    *   The purge status.
    *
    * @return array
    *   Table render array with details of request.
    */
-  protected function purgeStatusTable($status) {
-    $rows = [];
-    foreach ($status as $key => $value) {
-      $row = [$key, $value];
-      $rows[] = $row;
-    }
+  protected function purgeStatusTable(PurgeStatus $status) {
+    $item_list = implode(', ', $status->getUrls());
+    $rows = [
+      [$this->t('Purge ID'), $status->getPurgeId()],
+      [$this->t('Support ID'), $status->getSupportId()],
+      [$this->t('Description'), $status->getDescription()],
+      [$this->t('URLs'), $item_list],
+      [
+        $this->t('Last checked'),
+        $this->dateFormatter->format($status->getLastCheckedTime(), 'html_datetime'),
+      ],
+      [$this->t('HTTP Status'), $status->getHttpCode()],
+    ];
 
     $build['table'] = [
       '#type' => 'table',
@@ -184,6 +214,19 @@ class StatusLogController extends ControllerBase {
    */
   public function checkPurgeTitle($purge_id) {
     return $this->t('Purge status for purge id :purge_id', [':purge_id' => $purge_id]);
+  }
+
+  /**
+   * Returns a page title when deleting a purge.
+   *
+   * @param string $purge_id
+   *   The Purge ID to check, passed in from the route.
+   *
+   * @return string
+   *   A title suitable for including in an HTML tag.
+   */
+  public function deletePurgeTitle($purge_id) {
+    return $this->t('Delete purge id :purge_id', [':purge_id' => $purge_id]);
   }
 
 }

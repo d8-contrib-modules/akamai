@@ -36,7 +36,7 @@ akamai.statuslog_list:
     _permission: 'administer akamai'
 
 #
-#
+# Status log.
 #
 
 akamai.statuslog_purge_check:
@@ -46,3 +46,11 @@ akamai.statuslog_purge_check:
     _title_callback: '\Drupal\akamai\Controller\StatusLogController::checkPurgeTitle'
   requirements:
       _permission: 'administer akamai'
+
+akamai.statuslog_delete:
+  path: 'admin/akamai/status/{purge_id}/delete'
+  defaults:
+    _controller: '\Drupal\akamai\Controller\StatusLogController::deletePurgeAction'
+    _title_callback: '\Drupal\akamai\Controller\StatusLogController::deletePurgeTitle'
+  requirements:
+    _permission: 'administer akamai'
