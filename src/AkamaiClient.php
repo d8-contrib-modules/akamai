@@ -10,10 +10,12 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
 use Drupal\Core\Url;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Exception\ClientException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\UrlHelper;
+use Drupal\akamai\StatusStorage;
 
 /**
  * Connects to the Akamai EdgeGrid.
@@ -44,7 +46,7 @@ class AkamaiClient extends Client {
   protected $apiBaseUrl = '/ccu/v2/';
 
   /**
-   * A  list of objects to clear.
+   * A list of objects to clear.
    *
    * @var array
    */
@@ -56,6 +58,13 @@ class AkamaiClient extends Client {
    * @var \Drupal\Core\Logger\LoggerChannelInterface
    */
   protected $logger;
+
+  /**
+   * A purge status logger.
+   *
+   * @var StatusStorage
+   */
+  protected $statusStorage;
 
   /**
    * An action to take, either 'remove' or 'invalidate'.
@@ -92,15 +101,14 @@ class AkamaiClient extends Client {
    *   The config factory.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
+   * @param StatusStorage $status_storage
+   *   A status logger for tracking purge responses.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger = NULL) {
-    // @todo remove this
-    if (is_null($logger)) {
-      $logger = \Drupal::service('logger.channel.akamai');
-    }
+  public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger, StatusStorage $status_storage) {
     $this->logger = $logger;
     $this->drupalConfig = $config_factory->get('akamai.settings');
     $this->akamaiClientConfig = $this->createClientConfig();
+    $this->statusStorage = $status_storage;
 
     // Set action to take based on configuration.
     $this->setAction(key(array_filter($this->drupalConfig->get('action'))));
@@ -200,15 +208,16 @@ class AkamaiClient extends Client {
       // Example response body:
       // @code
       // {
-      //   "estimatedSeconds": 420,
-      //   "progressUri": "/ccu/v2/purges/57799d8b-10e4-11e4-9088-62ece60caaf0",
-      //   "purgeId": "57799d8b-10e4-11e4-9088-62ece60caaf0",
-      //   "supportId": "17PY1405953363409286-284546144",
-      //   "httpStatus": 201,
-      //   "detail": "Request accepted.",
-      //   "pingAfterSeconds": 420
-      // }
+      //  "estimatedSeconds": 420,
+      //  "progressUri": "/ccu/v2/purges/57799d8b-10e4-11e4-9088-62ece60caaf0",
+      //  "purgeId": "57799d8b-10e4-11e4-9088-62ece60caaf0",
+      //  "supportId": "17PY1405953363409286-284546144",
+      //  "httpStatus": 201,
+      //  "detail": "Request accepted.",
+      //  "pingAfterSeconds": 420
+      //  }.
       // @endcode
+      $this->statusStorage->saveResponseStatus($response, $objects);
       return $response;
     }
     catch (ClientException $e) {
@@ -217,6 +226,7 @@ class AkamaiClient extends Client {
       // Throw $e;.
     }
   }
+
 
   /**
    * Add a URL to the internal list of URLs to purge.
@@ -261,8 +271,8 @@ class AkamaiClient extends Client {
    * @param string $queue_name
    *   The queue name to check. Defaults to 'default'.
    *
-   * @return object
-   *    Response body of request.
+   * @return array
+   *    Response body of request as associative array.
    *
    * @link https://api.ccu.akamai.com/ccu/v2/docs/#section_CheckingQueueLength
    * @link https://developer.akamai.com/api/purge/ccu/reference.html
@@ -294,7 +304,7 @@ class AkamaiClient extends Client {
    *   A count of the remaining items in the purge queue.
    */
   public function getQueueLength() {
-    return $this->getQueue()->queueLength;
+    return $this->getQueue()['queueLength'];
   }
 
   /**
@@ -303,13 +313,12 @@ class AkamaiClient extends Client {
    * @param string $purge_id
    *   The UUID of the purge request to check.
    */
-  protected function getPurgeStatus($purge_id) {
-    // @todo Implement purge checking once we are tracking purge ids.
-    $request = new Request(
-      $this->apiBaseUrl . 'purges/' . $purge_id
-    );
+  public function getPurgeStatus($purge_id) {
     try {
-      $response = $this->request($request);
+      $response = $this->request(
+        'GET',
+        $this->apiBaseUrl . 'purges/' . $purge_id
+      );
       return $response;
     }
     catch (ClientException $e) {
