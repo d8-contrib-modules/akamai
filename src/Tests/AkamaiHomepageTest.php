@@ -67,8 +67,6 @@ class AkamaiHomepageTest extends WebTestBase {
     \Drupal::service('theme_handler')->install(['bartik']);
     $theme_settings = $this->config('system.theme');
     foreach (['bartik'] as $theme) {
-      $this->drupalGet('admin/structure/block/list/' . $theme);
-      $this->assertTitle(t('Block layout') . ' | Drupal');
       // Configure and save the block.
       $this->drupalPlaceBlock('akamai_cache_clear_block', array(
         'region' => 'content',

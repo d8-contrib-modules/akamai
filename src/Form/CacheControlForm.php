@@ -30,11 +30,11 @@ class CacheControlForm extends FormBase {
   /**
    * Constructs a new CacheControlForm.
    *
-   * @param \Drupal\akamai\AkamaiClient
+   * @param \Drupal\akamai\AkamaiClient $akamai_client
    *   The akamai client.
    */
-  public function __construct(AkamaiClient $akamaiClient) {
-    $this->akamaiClient = $akamaiClient;
+  public function __construct(AkamaiClient $akamai_client) {
+    $this->akamaiClient = $akamai_client;
   }
 
   /**
@@ -152,7 +152,12 @@ class CacheControlForm extends FormBase {
     }
     if (!empty($invalid_paths)) {
       $paths = implode(",", $invalid_paths);
-      $message = $paths . \Drupal::translation()->formatPlural(count($invalid_paths), ' path is invalid and does not exist', ' paths are invalid and do not exist') . $this->t(' on the site. Please provide valid URLs for purging.');
+      $message = $this->formatPlural(
+        count($invalid_paths),
+        '@paths path is invalid and does not exist on the site. Please provide valid URLs for purging.',
+        '@paths paths are invalid and do not exist on the site. Please provide valid URLs for purging.',
+        ['@paths' => $paths]
+      );
       $form_state->setErrorByName('paths', $message);
     }
   }
@@ -170,7 +175,9 @@ class CacheControlForm extends FormBase {
     $this->akamaiClient->setDomain($form_state->getValue('domain_override'));
     $response = $this->akamaiClient->purgeUrls($urls_to_clear);
     if ($response) {
-      drupal_set_message($this->t('Requested :action of the following URLs: :urls', [':action' => $action, ':urls' => implode(', ', $urls_to_clear)]));
+      drupal_set_message($this->t('Requested :action of the following URLs: :urls',
+        [':action' => $action, ':urls' => implode(', ', $urls_to_clear)])
+      );
     }
     else {
       drupal_set_message($this->t('There was an error clearing the cache. Check logs for further detail.'), 'error');
@@ -181,10 +188,7 @@ class CacheControlForm extends FormBase {
    * Shows a message to the user if not authenticated to the Akamai API.
    */
   protected function showAuthenticationWarning() {
-    $url = Url::fromRoute('akamai.settings');
-    $link_text = $this->t('Update settings now');
-    $message = 'You are not authenticated to Akamai CCU v2. Until you authenticate, you will not be able to clear URLs from the Akamai cache. @link';
-    $message = $this->t($message, ['@link' => $this->l($link_text, $url)]);
+    $message = $this->t('You are not authenticated to Akamai CCU v2. Until you authenticate, you will not be able to clear URLs from the Akamai cache. <a href=:url">Update settings now</a>.', [':url' => Url::fromRoute('akamai.settings')]);
     drupal_set_message($message, 'warning');
   }
 

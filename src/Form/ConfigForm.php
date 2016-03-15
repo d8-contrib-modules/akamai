@@ -37,21 +37,8 @@ class ConfigForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('akamai.settings');
 
-    $form = array();
-
-    // This doesn't do anything at present. Commenting out.
     // @todo decide whether we want a global killswitch here.
-//    $form['disable_fieldset'] = array(
-//      '#type' => 'fieldset',
-//      '#title' => $this->t('Disable Akamai Cache Clearing'),
-//      '#description' => $this->t('Set this field to disable cache clearing during imports, migrations, or other batch processes.'),
-//    );
-//
-//    $form['disable_fieldset']['disabled'] = array(
-//      '#type' => 'checkbox',
-//      '#title' => $this->t('Disable cache clearing'),
-//      '#default_value' => $config->get('disable'),
-//    );
+    $form = array();
 
     // Link to instructions on how to get Akamai credentials from Luna.
     $luna_url = 'https://developer.akamai.com/introduction/Prov_Creds.html';
@@ -166,7 +153,6 @@ class ConfigForm extends ConfigFormBase {
     $values = $form_state->getValues();
 
     $this->config('akamai.settings')
-      //->set('disabled', $values['disabled'])
       ->set('rest_api_url', $values['rest_api_url'])
       ->set('client_token', $values['client_token'])
       ->set('client_secret', $values['client_secret'])

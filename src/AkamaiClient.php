@@ -149,7 +149,7 @@ class AkamaiClient extends Client {
    */
   public function isAuthorized() {
     try {
-      $response = $this->_getQueue();
+      $response = $this->doGetQueue();
     }
     catch (\GuzzleHttp\Exception\ClientException $e) {
       // @todo better handling
@@ -164,7 +164,7 @@ class AkamaiClient extends Client {
    * @param string $url
    *   A URL to clear.
    *
-   * @return GuzzleHttp\Psr7\Response
+   * @return \GuzzleHttp\Psr7\Response
    *    Response to purge request.
    */
   public function purgeUrl($url) {
@@ -177,7 +177,7 @@ class AkamaiClient extends Client {
    * @param array $urls
    *   List of URLs to purge.
    *
-   * @return GuzzleHttp\Psr7\Response
+   * @return \GuzzleHttp\Psr7\Response
    *    Response to purge request.
    */
   public function purgeUrls($urls) {
@@ -190,7 +190,7 @@ class AkamaiClient extends Client {
    * @param array $objects
    *   A non-associative array of Akamai objects to clear.
    *
-   * @return GuzzleHttp\Psr7\Response
+   * @return \GuzzleHttp\Psr7\Response
    *    Response to purge request.
    *
    * @link https://developer.akamai.com/api/purge/ccu/reference.html
@@ -206,6 +206,7 @@ class AkamaiClient extends Client {
       );
       // Note that the response has useful data that we need to record.
       // Example response body:
+      // @code
       // {
       //  "estimatedSeconds": 420,
       //  "progressUri": "/ccu/v2/purges/57799d8b-10e4-11e4-9088-62ece60caaf0",
@@ -215,6 +216,7 @@ class AkamaiClient extends Client {
       //  "detail": "Request accepted.",
       //  "pingAfterSeconds": 420
       //  }.
+      // @endcode
       $this->statusStorage->saveResponseStatus($response, $objects);
       return $response;
     }
@@ -231,9 +233,12 @@ class AkamaiClient extends Client {
    *
    * @param string $url
    *   A URL to clear.
+   *
+   * @return $this
    */
   protected function addToPurgeList($url) {
     $this->purgeList[] = $url;
+    return $this;
   }
 
   /**
@@ -248,7 +253,7 @@ class AkamaiClient extends Client {
   protected function createPurgeBody($urls) {
     // Append the basepath to all URLs. Akamai only accepts fully formed URLs.
     foreach ($urls as &$url) {
-      $url = $this->drupalConfig->get('basepath') .'/'. $url;
+      $url = $this->drupalConfig->get('basepath') . '/' . $url;
     }
     return [
       'objects' => $urls,
@@ -273,7 +278,7 @@ class AkamaiClient extends Client {
    * @link https://developer.akamai.com/api/purge/ccu/reference.html
    */
   public function getQueue($queue_name = 'default') {
-    return Json::decode($this->_getQueue($queue_name)->getBody());
+    return Json::decode($this->doGetQueue($queue_name)->getBody());
   }
 
   /**
@@ -286,9 +291,10 @@ class AkamaiClient extends Client {
    *   The queue name to check. Defaults to 'default'.
    *
    * @return \Psr\Http\Message\ResponseInterface
+   *   The HTTP response.
    */
-  private function _getQueue($queue_name = 'default') {
-    return $this->get($this->apiBaseUrl . "queues/{$queue_name}");
+  private function doGetQueue($queue_name = 'default') {
+    return $this->get("/ccu/v2/queues/{$queue_name}");
   }
 
   /**
@@ -323,12 +329,35 @@ class AkamaiClient extends Client {
   }
 
   /**
-   * Sets the queue.
+   * Sets the queue name.
    *
    * @param string $queue
+   *   The queue name.
+   *
+   * @return $this
    */
   public function setQueue($queue) {
     $this->queue = $queue;
+    return $this;
+  }
+
+  /**
+   * Sets the type of purge.
+   *
+   * @param string $type
+   *   The type of purge, either 'arl' or 'cpcode'.
+   *
+   * @return $this
+   */
+  public function setType($type) {
+    $valid_types = array('cpcode', 'arl');
+    if (in_array($type, $valid_types)) {
+      $this->type = $type;
+    }
+    else {
+      throw new \InvalidArgumentException('Type must be one of: ' . implode(', ', $valid_types));
+    }
+    return $this;
   }
 
   /**
@@ -348,26 +377,12 @@ class AkamaiClient extends Client {
   }
 
   /**
-   * Helper function to set type of the request.
-   *
-   * @param string $type
-   *   Type of cache bin to clear.
-   */
-  public function setType($type) {
-    $valid_types = array('cpcode', 'arl');
-    if (in_array($type, $valid_types)) {
-      $this->type = $type;
-    }
-    else {
-      throw new \InvalidArgumentException('Type must be one of: ' . implode(', ', $valid_types));
-    }
-  }
-
-  /**
-   * Sets the domain for purging data.
+   * Sets the domain to clear.
    *
    * @param string $domain
-   *   Domain name of the purging instance.
+   *   The domain to clear, either 'production' or 'staging'.
+   *
+   * @return $this
    */
   public function setDomain($domain) {
     $valid_domains = array('staging', 'production');
@@ -377,11 +392,17 @@ class AkamaiClient extends Client {
     else {
       throw new \InvalidArgumentException('Domain must be one of: ' . implode(', ', $valid_domains));
     }
+    return $this;
   }
 
   /**
-   * Helper function to throw the exception.
-   *  Message to be logged.
+   * Formats a JSON error response into a string.
+   *
+   * @param \GuzzleHttp\Exception\ClientException $e
+   *   The ClientException containing the JSON error response.
+   *
+   * @return string
+   *   The formatted error message as a string.
    */
   protected function formatExceptionMessage(ClientException $e) {
     // Get the full response to avoid truncation.
@@ -397,10 +418,10 @@ class AkamaiClient extends Client {
   /**
    * Removes invalid URLs from an array of URLs.
    *
-   * @param $urls
+   * @param string[] $urls
    *   Array of URLs.
    *
-   * @return array
+   * @return string[]
    *   Array of valid URLs to purge.
    */
   public function removeInvalidUrls($urls) {
