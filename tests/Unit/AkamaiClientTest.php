@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Unit test for AkamaiClient.
+ */
+
 namespace Drupal\Tests\akamai\Unit;
 
 use Drupal\akamai\AkamaiClient;
@@ -31,7 +36,7 @@ class AkamaiClientTest extends UnitTestCase {
       'action' => [
         'remove' => TRUE,
         'invalidate' => FALSE,
-      ]
+      ],
     ];
     $logger = $this->prophesize(LoggerInterface::class)->reveal();
     return new AkamaiClient($this->getConfigFactoryStub(['akamai.settings' => $config]), $logger);
