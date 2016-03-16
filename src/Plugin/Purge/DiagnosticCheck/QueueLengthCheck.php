@@ -84,4 +84,5 @@ class QueueLengthCheck extends DiagnosticCheckBase implements DiagnosticCheckInt
 
     return SELF::SEVERITY_OK;
   }
+
 }

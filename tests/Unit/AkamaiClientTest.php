@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains Drupal\Tests\akamai\Unit\AkamaiClientTest.
+ */
+
 namespace Drupal\Tests\akamai\Unit;
 
 use Drupal\akamai\AkamaiClient;
@@ -17,12 +22,13 @@ class AkamaiClientTest extends UnitTestCase {
    * Creates a client to test.
    *
    * @param array $config
+   *   An array of client configuration.
    *
    * @return \Drupal\akamai\AkamaiClient
    *   An AkamaiClient to test.
    */
   protected function getClient(array $config = []) {
-    // Esnure some sane defaults.
+    // Ensure some sane defaults.
     $config = $config + [
       'domain' => [
         'production' => TRUE,
@@ -31,13 +37,15 @@ class AkamaiClientTest extends UnitTestCase {
       'action' => [
         'remove' => TRUE,
         'invalidate' => FALSE,
-      ]
+      ],
     ];
     $logger = $this->prophesize(LoggerInterface::class)->reveal();
     return new AkamaiClient($this->getConfigFactoryStub(['akamai.settings' => $config]), $logger);
   }
 
   /**
+   * Tests the setting of a queue.
+   *
    * @covers ::setQueue
    */
   public function testSetQueue() {
@@ -47,6 +55,8 @@ class AkamaiClientTest extends UnitTestCase {
   }
 
   /**
+   * Tests the setting of a asset type to clear.
+   *
    * @covers ::setType
    */
   public function testSetType() {
@@ -56,6 +66,8 @@ class AkamaiClientTest extends UnitTestCase {
   }
 
   /**
+   * Tests exception on incorrect asset type set.
+   *
    * @covers ::setType
    */
   public function testSetTypeException() {
@@ -66,6 +78,8 @@ class AkamaiClientTest extends UnitTestCase {
   }
 
   /**
+   * Tests setting of a purge action type.
+   *
    * @covers ::setAction
    */
   public function testSetAction() {
@@ -75,6 +89,8 @@ class AkamaiClientTest extends UnitTestCase {
   }
 
   /**
+   * Tests exception on incorrect action type set.
+   *
    * @covers ::setAction
    */
   public function testSetActionException() {
@@ -85,6 +101,8 @@ class AkamaiClientTest extends UnitTestCase {
   }
 
   /**
+   * Tests setting of a clearing domain.
+   *
    * @covers ::setDomain
    */
   public function testSetDomain() {
@@ -94,6 +112,8 @@ class AkamaiClientTest extends UnitTestCase {
   }
 
   /**
+   * Tests exception when setting invalid domain.
+   *
    * @covers ::setDomain
    */
   public function testSetDomainException() {
