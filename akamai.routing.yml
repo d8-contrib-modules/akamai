@@ -50,7 +50,7 @@ akamai.statuslog_purge_check:
 akamai.statuslog_delete:
   path: 'admin/akamai/status/{purge_id}/delete'
   defaults:
-    _controller: '\Drupal\akamai\Controller\StatusLogController::deletePurgeAction'
-    _title_callback: '\Drupal\akamai\Controller\StatusLogController::deletePurgeTitle'
+    _form: '\Drupal\akamai\Form\PurgeStatusDeleteForm'
+    _title: 'Delete Purge status'
   requirements:
     _permission: 'administer akamai'

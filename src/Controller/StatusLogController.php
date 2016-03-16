@@ -216,17 +216,4 @@ class StatusLogController extends ControllerBase {
     return $this->t('Purge status for purge id :purge_id', [':purge_id' => $purge_id]);
   }
 
-  /**
-   * Returns a page title when deleting a purge.
-   *
-   * @param string $purge_id
-   *   The Purge ID to check, passed in from the route.
-   *
-   * @return string
-   *   A title suitable for including in an HTML tag.
-   */
-  public function deletePurgeTitle($purge_id) {
-    return $this->t('Delete purge id :purge_id', [':purge_id' => $purge_id]);
-  }
-
 }
