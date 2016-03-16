@@ -39,8 +39,14 @@ class AkamaiClientTest extends UnitTestCase {
         'invalidate' => FALSE,
       ],
     ];
+
     $logger = $this->prophesize(LoggerInterface::class)->reveal();
-    return new AkamaiClient($this->getConfigFactoryStub(['akamai.settings' => $config]), $logger);
+
+    $status_storage = $this->getMockBuilder('Drupal\akamai\StatusStorage')
+      ->disableOriginalConstructor()
+      ->getMock();
+
+    return new AkamaiClient($this->getConfigFactoryStub(['akamai.settings' => $config]), $logger, $status_storage);
   }
 
   /**
