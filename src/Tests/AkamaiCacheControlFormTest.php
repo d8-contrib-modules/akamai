@@ -52,10 +52,9 @@ class AkamaiCacheControlFormTest extends WebTestBase {
   }
 
   /**
-   * Tests that manual Akamai Cache Clear page.
+   * Tests manual purging via Akamai Cache Clear form.
    */
   public function testValidUrlPurging() {
-
     $edit['paths'] = 'node/1';
     $edit['domain_override'] = 'staging';
     $edit['action'] = 'invalidate';
@@ -65,7 +64,6 @@ class AkamaiCacheControlFormTest extends WebTestBase {
   }
 
   public function testInvalidUrlPurging() {
-
     $edit['paths'] = 'links';
     $edit['domain_override'] = 'staging';
     $edit['action'] = 'invalidate';
@@ -75,7 +73,6 @@ class AkamaiCacheControlFormTest extends WebTestBase {
   }
 
   public function testExternalUrlPurging() {
-
     $edit['paths'] = 'https://www.google.com';
     $edit['domain_override'] = 'staging';
     $edit['action'] = 'invalidate';
