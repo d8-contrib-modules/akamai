@@ -1,6 +1,9 @@
 services:
   akamai.edgegridclient:
     class: Drupal\akamai\AkamaiClient
+    arguments: ['@config.factory', '@logger.channel.akamai', '@akamai.status_storage']
+  akamai.status_storage:
+    class: Drupal\akamai\StatusStorage
     arguments: ['@config.factory', '@logger.channel.akamai']
   logger.channel.akamai:
     class: Drupal\Core\Logger\LoggerChannel

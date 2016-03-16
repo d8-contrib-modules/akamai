@@ -1,5 +1,30 @@
-akamai.settings:
+# Create a block at admin/config to contain all Akamai pages.
+akamai.admin_config_menu:
+  title: 'Akamai'
+  route_name: akamai.config_menu
+  parent: system.admin_config
+  description: 'Akamai API integration'
+  weight: 100
+
+# Below links should appear in the above block.
+
+akamai.admin_config_cache_clear:
+  title: 'Akamai Cache Clear'
+  parent: akamai.admin_config_menu
+  description: 'Manually queue URLs for purging via a form.'
+  route_name: akamai.cache_clear
+  weight: 1
+
+akamai.admin_config_statuslog_list:
+  title: 'Akamai Purge Status'
+  parent: akamai.admin_config_menu
+  description: 'View recent purge requests and their status.'
+  route_name: akamai.statuslog_list
+  weight: 2
+
+akamai.admin_config_settings:
   title: 'Akamai Settings'
-  parent: system.admin_config_system
-  description: 'Akamai CDN integration settings.'
+  parent: akamai.admin_config_menu
+  description: 'Akamai API integration settings.'
   route_name: akamai.settings
+  weight: 3

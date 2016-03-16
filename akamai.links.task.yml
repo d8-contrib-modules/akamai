@@ -1,9 +1,0 @@
-system.performance_settings:
-  title: 'Performance'
-  route_name: system.performance_settings
-  base_route: system.performance_settings
-akamai.cache_clear:
-  title:  'Akamai Cache Clear'
-  description: 'Admin interface to flush Drupal resources from the Akamai cache.'
-  route_name: akamai.cache_clear
-  base_route: system.performance_settings
