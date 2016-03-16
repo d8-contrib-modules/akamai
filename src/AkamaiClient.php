@@ -9,8 +9,6 @@ namespace Drupal\akamai;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
 use Drupal\Core\Url;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Exception\ClientException;
 use Drupal\Component\Serialization\Json;
@@ -101,7 +99,7 @@ class AkamaiClient extends Client {
    *   The config factory.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
-   * @param StatusStorage $status_storage
+   * @param \Drupal\akamai\StatusStorage $status_storage
    *   A status logger for tracking purge responses.
    */
   public function __construct(ConfigFactoryInterface $config_factory, LoggerInterface $logger, StatusStorage $status_storage) {
