@@ -1,6 +1,7 @@
 # Akamai
 
 [![Build Status](https://travis-ci.org/d8-contrib-modules/akamai.svg?branch=8.x-3.x)](https://travis-ci.org/d8-contrib-modules/akamai)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/d8-contrib-modules/akamai/badges/quality-score.png?b=8.x-3.x)](https://scrutinizer-ci.com/g/d8-contrib-modules/akamai/?branch=8.x-3.x)
 
 This module provides a Drupal 8 service to interact with the [Akamai Content
 Control Utility](https://developer.akamai.com/api/purge/ccu/overview.html).
