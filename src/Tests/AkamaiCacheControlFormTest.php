@@ -71,7 +71,7 @@ class AkamaiCacheControlFormTest extends WebTestBase {
     $edit['domain_override'] = 'staging';
     $edit['action'] = 'invalidate';
     $this->drupalPostForm('admin/config/akamai/cache-clear', $edit, t('Start Refreshing Content'));
-    $this->assertText(t('Please enter only relative paths, not full URLs'), t('External URL found '));
+    $this->assertText(t('Please enter only relative paths, not full URLs'), t('External URL found'));
   }
 
 }

@@ -11,7 +11,6 @@ $dir = __DIR__;
 $previous_dir = '';
 
 while ($dir = dirname($dir)) {
-    echo $dir;
   // We've reached the root.
   if ($dir === $previous_dir) {
     break;
