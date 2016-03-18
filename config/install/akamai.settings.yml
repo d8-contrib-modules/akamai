@@ -13,3 +13,4 @@ action:
   invalidate: FALSE
 devel_mode: TRUE
 mock_endpoint: 'http://private-250a0-akamaiopen2purgeccuproduction.apiary-mock.com/ccu/v2/queues/default'
+status_expire: 1209600

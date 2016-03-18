@@ -1,0 +1,33 @@
+<?php
+/**
+ * @file
+ * Hook implementations for the Akamai Drupal 8 integration module.
+ */
+
+use Drupal\akamai\PurgeStatus;
+
+/**
+ * Implements hook_cron().
+ */
+function akamai_cron() {
+  $config = \Drupal::configFactory()->getEditable('akamai.settings');
+  $expire = $config->get('status_expire');
+  $status_storage = \Drupal::service('akamai.status_storage');
+
+  // Get all statuses currently stored in state.
+  $statuses = $status_storage->getResponseStatuses();
+  $to_delete = [];
+  // Mark logs older than our expire period for deletion.
+  foreach ($statuses as $status) {
+    $purge_status = new PurgeStatus($status);
+    if (($purge_status->getLastCheckedTime() + $expire) < REQUEST_TIME) {
+      $to_delete[] = $purge_status->getPurgeId();
+    }
+  }
+  // Now delete them.
+  foreach ($to_delete as $purge_id) {
+    $status_storage->delete($purge_id);
+  }
+
+  \Drupal::service('logger.channel.akamai')->info('Purge %count old Purge status logs.', ['%count' => count($to_delete)]);
+}
