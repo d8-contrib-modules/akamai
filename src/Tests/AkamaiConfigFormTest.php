@@ -8,6 +8,7 @@
 namespace Drupal\akamai\Tests;
 
 use Drupal\simpletest\WebTestBase;
+use Drupal\Core\Url;
 
 /**
  * Test the Akamai Config Form.
@@ -33,7 +34,6 @@ class AkamaiConfigFormTest extends WebTestBase {
    */
   protected function setUp() {
     parent::setUp();
-    $this->config = \Drupal::configFactory()->getEditable('sharethis.settings');
     // Create and log in our privileged user.
     $this->privilegedUser = $this->drupalCreateUser(array(
       'purge akamai cache',
@@ -56,6 +56,17 @@ class AkamaiConfigFormTest extends WebTestBase {
 
     $this->drupalPostForm('admin/config/akamai/config', $edit, t('Save configuration'));
     $this->assertText(t('Authenticated to Akamai.'), t('Authenticated to Akamai.'));
+
+    // Tests that we can't save non-integer status expire periods.
+    $edit['status_expire'] = 'lol';
+    $this->drupalPostForm(Url::fromRoute('akamai.settings')->getInternalPath(), $edit, t('Save configuration'));
+    $this->assertText(t('Please enter only integer values in this field.'), 'Allowed only integer expiry values');
+    $edit['status_expire'] = 1;
+
+    // Tests that we can't save non-integer timeouts.
+    $edit['timeout'] = 'lol';
+    $this->drupalPostForm(Url::fromRoute('akamai.settings')->getInternalPath(), $edit, t('Save configuration'));
+    $this->assertText(t('Please enter only integer values in this field.'), 'Allowed only integer timeout values');
   }
 
 }

@@ -24,7 +24,7 @@ class AkamaiHomepageTest extends WebTestBase {
   protected $node;
 
   /**
-   * User with admin rights.
+   * Path to Drupal homepage.
    */
   protected $homepage;
 

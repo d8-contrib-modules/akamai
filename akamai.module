@@ -10,7 +10,7 @@ use Drupal\akamai\PurgeStatus;
  * Implements hook_cron().
  */
 function akamai_cron() {
-  $config = \Drupal::configFactory()->getEditable('akamai.settings');
+  $config = \Drupal::configFactory()->get('akamai.settings');
   $expire = $config->get('status_expire');
   $status_storage = \Drupal::service('akamai.status_storage');
 
@@ -20,7 +20,7 @@ function akamai_cron() {
   // Mark logs older than our expire period for deletion.
   foreach ($statuses as $status) {
     $purge_status = new PurgeStatus($status);
-    if (($purge_status->getLastCheckedTime() + $expire) < REQUEST_TIME) {
+    if (($purge_status->getLastCheckedTime() + $expire) <= REQUEST_TIME) {
       $to_delete[] = $purge_status->getPurgeId();
     }
   }

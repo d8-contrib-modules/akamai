@@ -55,5 +55,5 @@ akamai.settings:
       type: string
       label: 'Mock endpoint URL (for devel mode).'
     status_expire:
-      type: int
+      type: integer
       label: 'Expire purge status log entries after this many seconds'
