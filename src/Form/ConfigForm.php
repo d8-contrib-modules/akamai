@@ -60,21 +60,21 @@ class ConfigForm extends ConfigFormBase {
     $form['akamai_credentials_fieldset']['access_token'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Access Token'),
-      '#description'   => $this->t('Access token'),
+      '#description'   => $this->t('Access token.'),
       '#default_value' => $config->get('access_token'),
     );
 
     $form['akamai_credentials_fieldset']['client_token'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Client Token'),
-      '#description'   => $this->t('Client token'),
+      '#description'   => $this->t('Client token.'),
       '#default_value' => $config->get('client_token'),
     );
 
     $form['akamai_credentials_fieldset']['client_secret'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Client Secret'),
-      '#description'   => $this->t('Client secret'),
+      '#description'   => $this->t('Client secret.'),
       '#default_value' => $config->get('client_secret'),
     );
 
@@ -92,7 +92,7 @@ class ConfigForm extends ConfigFormBase {
     $form['timeout'] = array(
       '#type' => 'textfield',
       '#title' => $this->t('Timeout Length'),
-      '#description' => $this->t("The timeout used by when sending the cache clear request to Akamai's servers. Most users will not need to change this value."),
+      '#description' => $this->t("The timeout in seconds used when sending the cache clear request to Akamai's servers. Most users will not need to change this value."),
       '#size' => 5,
       '#maxlength' => 3,
       '#default_value' => $config->get('timeout'),
@@ -107,7 +107,7 @@ class ConfigForm extends ConfigFormBase {
         'production' => $this->t('Production'),
         'staging' => $this->t('Staging'),
       ),
-      '#description' => $this->t('The Akamai domain to use for cache clearing'),
+      '#description' => $this->t('The Akamai domain to use for cache clearing.'),
       '#required' => TRUE,
     );
 
@@ -119,8 +119,16 @@ class ConfigForm extends ConfigFormBase {
         'remove' => $this->t('Remove'),
         'invalidate' => $this->t('Invalidate'),
       ),
-      '#description' => $this->t('The default clearing action.  The options are <em>remove</em> (which removes the item from the Akamai cache) and <em>invalidate</em> (which leaves the item in the cache, but invalidates it so that the origin will be hit on the next request)'),
+      '#description' => $this->t('The default clearing action. The options are <em>remove</em> (which removes the item from the Akamai cache) and <em>invalidate</em> (which leaves the item in the cache, but invalidates it so that the origin will be hit on the next request).'),
       '#required' => TRUE,
+    );
+
+    $form['status_expire'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Purge Status expiry'),
+      '#default_value' => $config->get('status_expire'),
+      '#description' => $this->t('This module keeps a log of purge statuses. They are automatically deleted after this amount of time (in seconds).'),
+      '#size' => 12,
     );
 
     $form['devel_fieldset'] = array(
@@ -149,6 +157,18 @@ class ConfigForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $int_fields = array('timeout', 'status_expire');
+    foreach ($int_fields as $field) {
+      if (!ctype_digit($form_state->getValue($field))) {
+        $form_state->setErrorByName($field, $this->t('Please enter only integer values in this field.'));
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitform(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
 
@@ -159,6 +179,7 @@ class ConfigForm extends ConfigFormBase {
       ->set('access_token', $values['access_token'])
       ->set('basepath', $values['basepath'])
       ->set('timeout', $values['timeout'])
+      ->set('status_expire', $values['status_expire'])
       ->set('domain', $this->saveDomain($values['domain']))
       ->set('action', $this->saveAction($values['action']))
       ->set('devel_mode', $values['devel_mode'])
