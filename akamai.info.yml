@@ -6,3 +6,5 @@ package: Other
 configure: akamai.config_form
 recommends:
  - purge
+ - purge_queuer_url
+ - composer_manager
