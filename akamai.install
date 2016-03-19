@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Contains install and update functionality for Akamai.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function akamai_requirements($phase) {
+  $requirements = [];
+  if ($phase == 'install') {
+    if (!class_exists('\Akamai\Open\EdgeGrid\Client')) {
+      $requirements['dependency'] = [
+        'title' => t('Akamai'),
+        'description' => t('Akamai requires the akamai-open/edgegrid-client library. Try installing it with composer manager.'),
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+  }
+
+  return $requirements;
+}
