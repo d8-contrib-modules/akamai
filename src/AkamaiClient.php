@@ -242,7 +242,7 @@ class AkamaiClient extends Client {
   /**
    * Create an array to pass to Akamai's purge function.
    *
-   * @param array $urls
+   * @param string[] $urls
    *   A list of URLs.
    *
    * @return array
