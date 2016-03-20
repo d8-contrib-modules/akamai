@@ -53,7 +53,7 @@ class StatusStorage {
    *
    * @param Response $response
    *   Response object, returned from a successful CCU call.
-   * @param array $queued_urls
+   * @param string[] $queued_urls
    *   A list of URLs enqueued in this request.
    */
   public function saveResponseStatus(Response $response, $queued_urls) {
@@ -120,6 +120,7 @@ class StatusStorage {
 
   /**
    * {@inheritdoc}
+   * @param string $purge_id
    */
   public function get($purge_id) {
     return $this->getStatusByPurgeId($purge_id);
@@ -139,6 +140,7 @@ class StatusStorage {
 
   /**
    * {@inheritdoc}
+   * @param string $id
    */
   public function delete($id) {
     $this->deleteStatusByPurgeId($id);
