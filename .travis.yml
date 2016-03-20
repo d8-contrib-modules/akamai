@@ -79,7 +79,12 @@ mysql:
   encoding: utf8
 
 before_install:
+  # Disable xdebug for composer, but keep it around for phpunit.
+  - PHPENV_VERSION_NAME=$(phpenv version | awk '{print $1}')
+  - PHPENV_CONFIG_PATH="/home/travis/.phpenv/versions/${PHPENV_VERSION_NAME}/etc/conf.d"
+  - cp "$PHPENV_CONFIG_PATH/xdebug.ini" /tmp/xdebug.ini
   - phpenv config-rm xdebug.ini
+  # Get the latest version of composer
   - composer self-update
   - composer --version
   # Token to avoid rate limiting, see https://www.drupal.org/node/2652054
@@ -94,15 +99,18 @@ install:
   - drupal-ti install
 
 before_script:
-  - echo -e "Running before script"
   - drupal-ti --include .travis-before-script.sh
   # This will install Drupal.
   - drupal-ti before_script
 
 script:
-  - echo -e "Running script"
   # || true means the test will not fail if there are code style issues.
-  - phpcs --report=full --standard=Drupal . || true
+  - phpcs --report=full --standard=Drupal --ignore=vendor . || true
+  # Get the Drupal install directory.
+  - export DRUPAL_BUILD_DIR="$TRAVIS_BUILD_DIR/../$DRUPAL_TI_ENVIRONMENT/drupal"
+  # Renable xdebug for coverage tracking.
+  - phpenv config-add /tmp/xdebug.ini
+  - $DRUPAL_BUILD_DIR/vendor/bin/phpunit --coverage-text --bootstrap="$DRUPAL_BUILD_DIR/core/tests/bootstrap.php"
   - drupal-ti script
 
 after_script:
