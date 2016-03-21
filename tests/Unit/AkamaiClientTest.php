@@ -40,7 +40,7 @@ class AkamaiClientTest extends UnitTestCase {
       ],
       'base_uri' => 'example.com',
       'mock_endpoint' => 'http://debug.com',
-      'timeout' => 300
+      'timeout' => 300,
 
     ];
 
@@ -51,6 +51,17 @@ class AkamaiClientTest extends UnitTestCase {
       ->getMock();
 
     return new AkamaiClient($this->getConfigFactoryStub(['akamai.settings' => $config]), $logger, $status_storage);
+  }
+
+  /**
+   * Returns a client set to use devel_mode and a testing endpoint.
+   */
+  public function getTestingClient() {
+    $client_config = [
+      'devel_mode' => TRUE,
+      'mock_endpoint' => 'http://private-250a0-akamaiopen2purgeccuproduction.apiary-mock.com',
+    ];
+    return $this->getClient($client_config);
   }
 
   /**
@@ -132,6 +143,7 @@ class AkamaiClientTest extends UnitTestCase {
     $akamai_client->setDomain('wrong');
     $this->assertAttributeEquals('production', 'domain', $akamai_client);
   }
+
   /**
    * Tests creation of client config.
    *
@@ -147,5 +159,89 @@ class AkamaiClientTest extends UnitTestCase {
     $this->assertEquals(['base_uri' => 'http://debug.com', 'timeout' => 300], $akamai_client->createClientConfig());
   }
 
+  /**
+   * Tests creation of a purge payload body.
+   */
+  public function testCreatePurgeBody() {
+    $urls = ['example.com/node/11'];
+    $expected = [
+      'action' => 'remove',
+      'domain' => 'production',
+      'type' => 'arl',
+      'objects' => $urls,
+    ];
+    $akamai_client = $this->getClient();
+
+    $this->assertEquals($expected, $akamai_client->createPurgeBody($urls));
+  }
+
+  /**
+   * Tests creation of a purge request.
+   *
+   * @covers ::purgeUrl
+   * @covers ::purgeUrls
+   * @covers ::purgeRequest
+   * @covers ::formatExceptionMessage
+   */
+  public function testPurgeRequest() {
+    $urls = ['example.com/node/11'];
+    $akamai_client = $this->getTestingClient();
+
+    $response = $akamai_client->purgeUrl($urls[0]);
+    $this->assertEquals('GuzzleHttp\Psr7\Response', get_class($response));
+    $response = $akamai_client->purgeUrls($urls);
+    $this->assertEquals('GuzzleHttp\Psr7\Response', get_class($response));
+
+    $this->assertEquals('201', $response->getStatusCode());
+
+    // Intentionally trigger an exception.
+    $akamai_client = $this->getClient();
+    $akamai_client->setQueue('notaqueue');
+    $this->assertFalse($akamai_client->purgeUrls($urls));
+  }
+
+  /**
+   * Tests checking of a queue.
+   *
+   * @covers ::getQueue
+   * @covers ::getQueueLength
+   * @covers ::doGetQueue
+   */
+  public function testCheckQueue() {
+    $akamai_client = $this->getTestingClient();
+    $this->assertEquals(4, $akamai_client->getQueueLength());
+  }
+
+  /**
+   * Tests authorization check.
+   *
+   * @covers ::isAuthorized
+   * @covers ::setApiBaseUrl
+   * @covers ::formatExceptionMessage
+   */
+  public function testIsAuthorized() {
+    $akamai_client = $this->getTestingClient();
+    $this->assertTrue($akamai_client->isAuthorized());
+
+    // Intentionally send a bad request.
+    $akamai_client->setApiBaseUrl('not-a-url');
+    $this->assertFalse($akamai_client->isAuthorized());
+  }
+
+  /**
+   * Tests checking of purge status.
+   *
+   * @covers ::getPurgeStatus
+   */
+  public function testGetPurgeStatus() {
+    $akamai_client = $this->getTestingClient();
+    $response = $akamai_client->getPurgeStatus('dummy_id');
+    $this->assertEquals('GuzzleHttp\Psr7\Response', get_class($response));
+    $this->assertEquals('200', $response->getStatusCode());
+
+    // Intentionally send bad request.
+    $akamai_client->setApiBaseUrl('not-a-url');
+    $this->assertFalse($akamai_client->getPurgeStatus('dummy_id'));
+  }
 
 }

@@ -8,12 +8,9 @@ namespace Drupal\akamai;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
-use Drupal\Core\Url;
 use Psr\Log\LoggerInterface;
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
 use Drupal\Component\Serialization\Json;
-use Drupal\Component\Utility\UrlHelper;
-use Drupal\akamai\StatusStorage;
 
 /**
  * Connects to the Akamai EdgeGrid.
@@ -137,12 +134,15 @@ class AkamaiClient extends Client {
 
   /**
    * Checks that we can connect with the supplied credentials.
+   *
+   * @return bool
+   *   TRUE if authorised, FALSE if not.
    */
   public function isAuthorized() {
     try {
       $response = $this->doGetQueue();
     }
-    catch (\GuzzleHttp\Exception\ClientException $e) {
+    catch (RequestException $e) {
       // @todo better handling
       return FALSE;
     }
@@ -210,8 +210,9 @@ class AkamaiClient extends Client {
       $this->statusStorage->saveResponseStatus($response, $objects);
       return $response;
     }
-    catch (ClientException $e) {
+    catch (RequestException $e) {
       $this->logger->error($this->formatExceptionMessage($e));
+      return FALSE;
       // @todo better error handling
       // Throw $e;.
     }
@@ -226,11 +227,7 @@ class AkamaiClient extends Client {
    * @return array
    *   An array suitable for sending to the Akamai purge endpoint.
    */
-  protected function createPurgeBody($urls) {
-    // Append the basepath to all URLs. Akamai only accepts fully formed URLs.
-    foreach ($urls as &$url) {
-      $url = $this->drupalConfig->get('basepath') . '/' . $url;
-    }
+  public function createPurgeBody($urls) {
     return [
       'objects' => $urls,
       'action' => $this->action,
@@ -238,8 +235,6 @@ class AkamaiClient extends Client {
       'type' => $this->type,
     ];
   }
-
-  // @todo Create diagnostic check classes to consume these.
 
   /**
    * Get a queue to check its status.
@@ -270,7 +265,7 @@ class AkamaiClient extends Client {
    *   The HTTP response.
    */
   private function doGetQueue($queue_name = 'default') {
-    return $this->get("/ccu/v2/queues/{$queue_name}");
+    return $this->get($this->apiBaseUrl . "queues/{$queue_name}");
   }
 
   /**
@@ -284,10 +279,13 @@ class AkamaiClient extends Client {
   }
 
   /**
-   * Return the status of a previous purge request.
+   * Returns the status of a previous purge request.
    *
    * @param string $purge_id
    *   The UUID of the purge request to check.
+   *
+   * @return \GuzzleHttp\Psr7\Response
+   *    Response to purge status request.
    */
   public function getPurgeStatus($purge_id) {
     try {
@@ -297,7 +295,7 @@ class AkamaiClient extends Client {
       );
       return $response;
     }
-    catch (ClientException $e) {
+    catch (RequestException $e) {
       // @todo Better handling
       $this->logger->log($this->formatExceptionMessage($e));
       return FALSE;
@@ -372,56 +370,39 @@ class AkamaiClient extends Client {
   }
 
   /**
+   * Sets API base url.
+   *
+   * @param string $url
+   *   A url to an API, eg '/ccu/v2/'.
+   */
+  public function setApiBaseUrl($url) {
+    $this->apiBaseUrl = $url;
+  }
+
+  /**
    * Formats a JSON error response into a string.
    *
-   * @param \GuzzleHttp\Exception\ClientException $e
-   *   The ClientException containing the JSON error response.
+   * @param \GuzzleHttp\Exception\RequestException $e
+   *   The RequestException containing the JSON error response.
    *
    * @return string
    *   The formatted error message as a string.
    */
-  protected function formatExceptionMessage(ClientException $e) {
+  protected function formatExceptionMessage(RequestException $e) {
+    $message = '';
     // Get the full response to avoid truncation.
     // @see https://laracasts.com/discuss/channels/general-discussion/guzzle-error-message-gets-truncated
-    $error_detail = Json::decode($e->getResponse()->getBody()->getContents());
-    $message = '';
-    foreach ($error_detail as $key => $value) {
-      $message .= "$key: $value " . PHP_EOL;
+    if ($e->hasResponse()) {
+      $error_detail = Json::decode($e->getResponse()->getBody());
+      foreach ($error_detail as $key => $value) {
+        $message .= "$key: $value " . PHP_EOL;
+      }
     }
-    return $message;
-  }
+    else {
+      $message = $e->getMessage();
+    }
 
-  /**
-   * Removes invalid URLs from an array of URLs.
-   *
-   * @param string[] $urls
-   *   Array of URLs.
-   *
-   * @return string[]
-   *   Array of valid URLs to purge.
-   */
-  public function removeInvalidUrls($urls) {
-    $urls_to_clear = [];
-    $base_url = $this->drupalConfig->get('basepath');
-    foreach ($urls as $path) {
-      if ($path[0] === '/') {
-        $path = ltrim($path, '/');
-      }
-      $full_path = $base_url . '/' . $path;
-      $url = Url::fromUserInput('/' . trim($path));
-      try {
-        if ($url->isRouted() && UrlHelper::isValid($full_path)) {
-          $urls_to_clear[] = trim($path);
-        }
-        else {
-          throw new \InvalidArgumentException($path . ' is a not a URL handled by this Drupal site. Please provide a valid URL for purging.');
-        }
-      }
-      catch (\InvalidArgumentException $e) {
-        $this->logger->error($e->getMessage());
-      }
-    }
-    return $urls_to_clear;
+    return $message;
   }
 
 }
