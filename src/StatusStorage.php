@@ -120,7 +120,9 @@ class StatusStorage {
 
   /**
    * {@inheritdoc}
+   *
    * @param string $purge_id
+   *   Purge id to get status for.
    */
   public function get($purge_id) {
     return $this->getStatusByPurgeId($purge_id);
@@ -140,7 +142,9 @@ class StatusStorage {
 
   /**
    * {@inheritdoc}
+   *
    * @param string $id
+   *   Purge status to delete.
    */
   public function delete($id) {
     $this->deleteStatusByPurgeId($id);
