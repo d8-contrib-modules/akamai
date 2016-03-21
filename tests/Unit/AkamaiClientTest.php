@@ -38,6 +38,10 @@ class AkamaiClientTest extends UnitTestCase {
         'remove' => TRUE,
         'invalidate' => FALSE,
       ],
+      'base_uri' => 'example.com',
+      'mock_endpoint' => 'http://debug.com',
+      'timeout' => 300
+
     ];
 
     $logger = $this->prophesize(LoggerInterface::class)->reveal();
@@ -128,5 +132,20 @@ class AkamaiClientTest extends UnitTestCase {
     $akamai_client->setDomain('wrong');
     $this->assertAttributeEquals('production', 'domain', $akamai_client);
   }
+  /**
+   * Tests creation of client config.
+   *
+   * @covers ::createClientConfig
+   */
+  public function testCreateClientConfig() {
+    $client_config = ['rest_api_url' => 'http://example.com'];
+    $akamai_client = $this->getClient($client_config);
+    $this->assertEquals(['base_uri' => 'http://example.com', 'timeout' => 300], $akamai_client->createClientConfig());
+
+    $client_config = ['devel_mode' => TRUE];
+    $akamai_client = $this->getClient($client_config);
+    $this->assertEquals(['base_uri' => 'http://debug.com', 'timeout' => 300], $akamai_client->createClientConfig());
+  }
+
 
 }

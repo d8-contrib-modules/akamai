@@ -44,13 +44,6 @@ class AkamaiClient extends Client {
   protected $apiBaseUrl = '/ccu/v2/';
 
   /**
-   * A list of objects to clear.
-   *
-   * @var array
-   */
-  protected $purgeList;
-
-  /**
    * A logger instance.
    *
    * @var \Drupal\Core\Logger\LoggerChannelInterface
@@ -113,7 +106,7 @@ class AkamaiClient extends Client {
     $this->setDomain(key(array_filter($this->drupalConfig->get('domain'))));
 
     // Create an authentication object so we can sign requests.
-    $auth = AkamaiAuthentication::create($this->drupalConfig);
+    $auth = AkamaiAuthentication::create($config_factory);
     // Set the auth credentials up.
     // @see Authentication::createFromEdgeRcFile()
     parent::__construct($this->akamaiClientConfig, $auth);
@@ -127,7 +120,7 @@ class AkamaiClient extends Client {
    *
    * @see Akamai\Open\EdgeGrid\Client::setBasicOptions
    */
-  protected function createClientConfig() {
+  public function createClientConfig() {
     $client_config = array();
     // If we are in devel mode, use the mocked endpoint.
     if ($this->drupalConfig->get('devel_mode') == TRUE) {
@@ -195,7 +188,6 @@ class AkamaiClient extends Client {
    * @link https://github.com/akamai-open/api-kickstart/blob/master/examples/php/ccu.php#L58
    */
   protected function purgeRequest($objects) {
-    $objects = $this->removeInvalidUrls($objects);
     try {
       $response = $this->request(
         'POST',
@@ -223,20 +215,6 @@ class AkamaiClient extends Client {
       // @todo better error handling
       // Throw $e;.
     }
-  }
-
-
-  /**
-   * Add a URL to the internal list of URLs to purge.
-   *
-   * @param string $url
-   *   A URL to clear.
-   *
-   * @return $this
-   */
-  protected function addToPurgeList($url) {
-    $this->purgeList[] = $url;
-    return $this;
   }
 
   /**

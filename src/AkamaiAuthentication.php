@@ -7,7 +7,7 @@
 
 namespace Drupal\akamai;
 
-use Drupal\Core\Config\Config;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Authentication;
 
 /**
@@ -23,17 +23,17 @@ class AkamaiAuthentication extends Authentication {
   /**
    * AkamaiAuthentication factory method, following superclass patterns.
    *
-   * @param \Drupal\Core\Config\Config $config
-   *   A config object, containing client authentication details.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
+   *   A config factory, for getting client authentication details.
    *
    * @return \Drupal\akamai\AkamaiAuthentication
    *   An authentication object.
    */
-  public static function create(Config $config) {
-
+  public static function create(ConfigFactoryInterface $config) {
     // Following the pattern in the superclass.
     $auth = new static();
 
+    $config = $config->get('akamai.settings');
     // @todo Maybe make the devel mode check a library function?
     if ($config->get('devel_mode') == TRUE) {
       $auth->setHost($config->get('mock_endpoint'));
@@ -50,6 +50,16 @@ class AkamaiAuthentication extends Authentication {
     }
 
     return $auth;
+  }
+
+  /**
+   * Returns the auth config.
+   *
+   * @return string[]
+   *   An array with keys client_token, client_secret, access_token.
+   */
+  public function getAuth() {
+    return $this->auth;
   }
 
 }
