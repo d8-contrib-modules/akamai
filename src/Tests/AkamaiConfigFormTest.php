@@ -52,7 +52,7 @@ class AkamaiConfigFormTest extends WebTestBase {
     $edit['domain'] = 'staging';
     $edit['action'] = 'invalidate';
     $edit['devel_mode'] = 1;
-    $edit['mock_endpoint'] = 'http://private-250a0-akamaiopen2purgeccuproduction.apiary-mock.com/ccu/v2/queues/default';
+    $edit['mock_endpoint'] = 'http://private-250a0-akamaiopen2purgeccuproduction.apiary-mock.com';
 
     $this->drupalPostForm('admin/config/akamai/config', $edit, t('Save configuration'));
     $this->assertText(t('Authenticated to Akamai.'), t('Authenticated to Akamai.'));

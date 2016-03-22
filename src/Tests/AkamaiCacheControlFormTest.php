@@ -49,6 +49,9 @@ class AkamaiCacheControlFormTest extends WebTestBase {
     $this->drupalLogin($this->privilegedUser);
     $this->drupalCreateContentType(['type' => 'article']);
     $this->node = $this->drupalCreateNode(['type' => 'article']);
+
+    $edit['basepath'] = 'http://www.example.com';
+    $this->drupalPostForm('admin/config/akamai/config', $edit, t('Save configuration'));
   }
 
   /**
@@ -59,19 +62,19 @@ class AkamaiCacheControlFormTest extends WebTestBase {
     $edit['domain_override'] = 'staging';
     $edit['action'] = 'invalidate';
     $this->drupalPostForm('admin/config/akamai/cache-clear', $edit, t('Start Refreshing Content'));
-    $this->assertText(t('Requested invalidate of the following URLs: /node/1'), t('node/1 URLs purged'));
+    $this->assertText(t('Requested invalidate of the following URLs: /node/1'), 'Valid URL purged correctly.');
 
     $edit['paths'] = 'links';
     $edit['domain_override'] = 'staging';
     $edit['action'] = 'invalidate';
     $this->drupalPostForm('admin/config/akamai/cache-clear', $edit, t('Start Refreshing Content'));
-    $this->assertText(t('Please enter at least one valid path for URL purging'), t('Invalid URL found'));
+    $this->assertText(t('Please provide at least one valid URL for purging.'), 'Invalid URL rejected.');
 
     $edit['paths'] = 'https://www.google.com';
     $edit['domain_override'] = 'staging';
     $edit['action'] = 'invalidate';
     $this->drupalPostForm('admin/config/akamai/cache-clear', $edit, t('Start Refreshing Content'));
-    $this->assertText(t('Please enter only relative paths, not full URLs'), t('External URL found'));
+    $this->assertText(t('Please enter only relative paths, not full URLs'), 'External URL rejected.');
   }
 
 }

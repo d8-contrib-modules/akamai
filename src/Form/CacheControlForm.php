@@ -161,7 +161,7 @@ class CacheControlForm extends FormBase {
       $paths = implode(",", $invalid_paths);
       $message = $this->formatPlural(
         count($invalid_paths),
-        'The \'@paths\' path is invalid and does not exist on the site. Please provide a valid URL for purging.',
+        'The \'@paths\' path is invalid and does not exist on the site. Please provide at least one valid URL for purging.',
         '@paths paths are invalid and do not exist on the site. Please provide valid URLs for purging.',
         ['@paths' => $paths]
       );
