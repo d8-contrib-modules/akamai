@@ -28,6 +28,13 @@ class CacheControlForm extends FormBase {
   protected $akamaiClient;
 
   /**
+   * A path alias manager.
+   *
+   * @var \Drupal\Core\Path\AliasManager.
+   */
+  protected $aliasManager;
+
+  /**
    * Constructs a new CacheControlForm.
    *
    * @param \Drupal\akamai\AkamaiClient $akamai_client
@@ -35,6 +42,7 @@ class CacheControlForm extends FormBase {
    */
   public function __construct(AkamaiClient $akamai_client) {
     $this->akamaiClient = $akamai_client;
+
   }
 
   /**
@@ -126,19 +134,21 @@ class CacheControlForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     foreach (explode(PHP_EOL, $form_state->getValue('paths')) as $path) {
+      // Remove any leading slashes so we can control them later.
       if ($path[0] === '/') {
         $path = ltrim($path, '/');
       }
+      $path = trim($path);
       if (UrlHelper::isExternal($path)) {
-        $full_urls[] = trim($path);
+        $full_urls[] = $path;
       }
       else {
-        $url = Url::fromUserInput('/' . trim($path));
+        $url = Url::fromUserInput('/' . $path);
         if ($url->isRouted()) {
-          $paths_to_clear[] = trim($path);
+          $paths_to_clear[] = $path;
         }
         else {
-          $invalid_paths[] = trim($path);
+          $invalid_paths[] = $path;
         }
       }
     }
@@ -147,18 +157,19 @@ class CacheControlForm extends FormBase {
       $form_state->setErrorByName('paths', $this->t('Please enter only relative paths, not full URLs.'));
     }
 
-    if (empty($paths_to_clear)) {
-      $form_state->setErrorByName('paths', $this->t('Please enter at least one valid path for URL purging'));
-    }
     if (!empty($invalid_paths)) {
       $paths = implode(",", $invalid_paths);
       $message = $this->formatPlural(
         count($invalid_paths),
-        '@paths path is invalid and does not exist on the site. Please provide valid URLs for purging.',
+        'The \'@paths\' path is invalid and does not exist on the site. Please provide a valid URL for purging.',
         '@paths paths are invalid and do not exist on the site. Please provide valid URLs for purging.',
         ['@paths' => $paths]
       );
       $form_state->setErrorByName('paths', $message);
+    }
+
+    if (empty($paths_to_clear)) {
+      $form_state->setErrorByName('paths', $this->t('Please enter at least one valid path for URL purging.'));
     }
   }
 

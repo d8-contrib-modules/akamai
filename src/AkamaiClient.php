@@ -6,6 +6,7 @@
 
 namespace Drupal\akamai;
 
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
 use Psr\Log\LoggerInterface;
@@ -83,6 +84,11 @@ class AkamaiClient extends Client {
   protected $queue = 'default';
 
   /**
+   * The domain for which Akamai is managing cache.
+   */
+  protected $baseUrl;
+
+  /**
    * AkamaiClient constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -98,9 +104,13 @@ class AkamaiClient extends Client {
     $this->akamaiClientConfig = $this->createClientConfig();
     $this->statusStorage = $status_storage;
 
-    // Set action to take based on configuration.
-    $this->setAction(key(array_filter($this->drupalConfig->get('action'))));
-    $this->setDomain(key(array_filter($this->drupalConfig->get('domain'))));
+    $this
+      // Set action to take based on configuration.
+      ->setAction(key(array_filter($this->drupalConfig->get('action'))))
+      // Set domain (staging or production).
+      ->setDomain(key(array_filter($this->drupalConfig->get('domain'))))
+      // Set base url for the cache (eg, example.com).
+      ->setBaseUrl($this->drupalConfig->get('basepath'));
 
     // Create an authentication object so we can sign requests.
     $auth = AkamaiAuthentication::create($config_factory);
@@ -144,6 +154,7 @@ class AkamaiClient extends Client {
     }
     catch (RequestException $e) {
       // @todo better handling
+      $this->logger->error($this->formatExceptionMessage($e));
       return FALSE;
     }
     return $response->getStatusCode() == 200;
@@ -172,6 +183,12 @@ class AkamaiClient extends Client {
    *    Response to purge request.
    */
   public function purgeUrls($urls) {
+    $urls = $this->normalizeUrls($urls);
+    foreach ($urls as $url) {
+      if ($this->isAkamaiManagedUrl($url) == FALSE) {
+        throw new \InvalidArgumentException("The URL $url is not managed by Akamai. Try setting your Akamai base url.");
+      }
+    }
     return $this->purgeRequest($urls);
   }
 
@@ -237,6 +254,58 @@ class AkamaiClient extends Client {
   }
 
   /**
+   * Given a list of URLs, ensure they are fully qualified.
+   *
+   * @param string[] $urls
+   *   A list of URLs.
+   *
+   * @return string[]
+   *   A list of fully qualified URls.
+   */
+  public function normalizeUrls($urls) {
+    foreach ($urls as &$url) {
+      $url = $this->normalizeUrl($url);
+    }
+    return $urls;
+  }
+
+  /**
+   * Given a URL, make sure it is fully qualified.
+   *
+   * @param string $url
+   *   A URL or Drupal path.
+   *
+   * @return string
+   *   A fully qualified URL.
+   */
+  public function normalizeUrl($url) {
+    if (UrlHelper::isExternal($url, TRUE)) {
+      return $url;
+    }
+    else {
+      // Otherwise, try prepending the base URL.
+      $url = ltrim($url, '/');
+      $domain = rtrim($this->baseUrl, '/');
+      return $domain . '/' . $url;
+    }
+  }
+
+  /**
+   * Checks whether a fully qualified URL is handled by Akamai.
+   *
+   * Note this is based only on local config and doesn't check upstream.
+   *
+   * @param string $url
+   *   The URL to check.
+   *
+   * @return bool
+   *   TRUE if a url with an Akamai managed domain, FALSE if not.
+   */
+  public function isAkamaiManagedUrl($url) {
+    return strpos($url, $this->baseUrl) !== FALSE;
+  }
+
+  /**
    * Get a queue to check its status.
    *
    * @param string $queue_name
@@ -297,7 +366,7 @@ class AkamaiClient extends Client {
     }
     catch (RequestException $e) {
       // @todo Better handling
-      $this->logger->log($this->formatExceptionMessage($e));
+      $this->logger->error($this->formatExceptionMessage($e));
       return FALSE;
     }
   }
@@ -339,6 +408,8 @@ class AkamaiClient extends Client {
    *
    * @param string $action
    *   Action to be taken while purging.
+   *
+   * @return $this
    */
   public function setAction($action) {
     $valid_actions = array('remove', 'invalidate');
@@ -348,6 +419,7 @@ class AkamaiClient extends Client {
     else {
       throw new \InvalidArgumentException('Action must be one of: ' . implode(', ', $valid_actions));
     }
+    return $this;
   }
 
   /**
@@ -370,13 +442,29 @@ class AkamaiClient extends Client {
   }
 
   /**
+   * Sets Akamai base url.
+   *
+   * @param string $url
+   *   The base url of the site Akamai is managing, eg 'http://example.com'.
+   *
+   * @return $this
+   */
+  public function setBaseUrl($url) {
+    $this->baseUrl = $url;
+    return $this;
+  }
+
+  /**
    * Sets API base url.
    *
    * @param string $url
    *   A url to an API, eg '/ccu/v2/'.
+   *
+   * @return $this
    */
   public function setApiBaseUrl($url) {
     $this->apiBaseUrl = $url;
+    return $this;
   }
 
   /**
@@ -393,11 +481,15 @@ class AkamaiClient extends Client {
     // Get the full response to avoid truncation.
     // @see https://laracasts.com/discuss/channels/general-discussion/guzzle-error-message-gets-truncated
     if ($e->hasResponse()) {
-      $error_detail = Json::decode($e->getResponse()->getBody());
-      foreach ($error_detail as $key => $value) {
-        $message .= "$key: $value " . PHP_EOL;
+      $body = $e->getResponse()->getBody();
+      $error_detail = Json::decode($body);
+      if (is_null($error_detail) == FALSE && is_array($error_detail)) {
+        foreach ($error_detail as $key => $value) {
+          $message .= "$key: $value " . PHP_EOL;
+        }
       }
     }
+    // Fallback to the standard message.
     else {
       $message = $e->getMessage();
     }

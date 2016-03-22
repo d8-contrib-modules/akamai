@@ -38,7 +38,7 @@ class AkamaiClientTest extends UnitTestCase {
         'remove' => TRUE,
         'invalidate' => FALSE,
       ],
-      'base_uri' => 'example.com',
+      'basepath' => 'http://example.com',
       'mock_endpoint' => 'http://debug.com',
       'timeout' => 300,
 
@@ -184,7 +184,7 @@ class AkamaiClientTest extends UnitTestCase {
    * @covers ::formatExceptionMessage
    */
   public function testPurgeRequest() {
-    $urls = ['example.com/node/11'];
+    $urls = ['http://example.com/node/11'];
     $akamai_client = $this->getTestingClient();
 
     $response = $akamai_client->purgeUrl($urls[0]);
@@ -242,6 +242,54 @@ class AkamaiClientTest extends UnitTestCase {
     // Intentionally send bad request.
     $akamai_client->setApiBaseUrl('not-a-url');
     $this->assertFalse($akamai_client->getPurgeStatus('dummy_id'));
+  }
+
+  /**
+   * Tests that a URL contains the Akamai managed domain.
+   *
+   * @covers ::isAkamaiManagedUrl
+   * @covers ::setBaseUrl
+   */
+  public function testIsAkamaiManagedUrl() {
+    $akamai_client = $this->getClient();
+    $akamai_client->setBaseUrl('http://example2.com/');
+    $this->assertTrue($akamai_client->isAkamaiManagedUrl('http://example2.com/example/url'));
+  }
+
+  /**
+   * Tests that a URL is converted to fully qualified as appropriate.
+   *
+   * @covers ::normalizeUrl
+   */
+  public function testNormalizeUrl() {
+    $akamai_client = $this->getClient();
+    $this->assertEquals('http://example3.com/my/url', $akamai_client->normalizeUrl('http://example3.com/my/url'));
+    // Using example.com from the client config.
+    $this->assertEquals('http://example.com/my/url', $akamai_client->normalizeUrl('my/url'));
+  }
+
+  /**
+   * Tests that a group of URLs are converted to fully qualified as appropriate.
+   *
+   * @covers ::normalizeUrls
+   */
+  public function testNormalizeUrls() {
+    $akamai_client = $this->getClient();
+
+    $input = [
+      'node/11',
+      'http://example.com/node/13',
+      'my/great/page',
+    ];
+
+    // Using example.com from the client config.
+    $expected = [
+      'http://example.com/node/11',
+      'http://example.com/node/13',
+      'http://example.com/my/great/page',
+    ];
+
+    $this->assertEquals($expected, $akamai_client->normalizeUrls($input));
   }
 
 }
