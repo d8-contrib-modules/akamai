@@ -185,7 +185,7 @@ class AkamaiClient extends Client {
   public function purgeUrls($urls) {
     $urls = $this->normalizeUrls($urls);
     foreach ($urls as $url) {
-      if ($this->isAkamaiManagedUrl($url) == FALSE) {
+      if ($this->isAkamaiManagedUrl($url) === FALSE) {
         throw new \InvalidArgumentException("The URL $url is not managed by Akamai. Try setting your Akamai base url.");
       }
     }
@@ -195,11 +195,11 @@ class AkamaiClient extends Client {
   /**
    * Ask the API to purge an object.
    *
-   * @param array $objects
+   * @param string[] $objects
    *   A non-associative array of Akamai objects to clear.
    *
-   * @return \GuzzleHttp\Psr7\Response
-   *    Response to purge request.
+   * @return \GuzzleHttp\Psr7\Response|bool
+   *    Response to purge request, or FALSE on failure.
    *
    * @link https://developer.akamai.com/api/purge/ccu/reference.html
    * @link https://github.com/akamai-open/api-kickstart/blob/master/examples/php/ccu.php#L58
@@ -353,8 +353,8 @@ class AkamaiClient extends Client {
    * @param string $purge_id
    *   The UUID of the purge request to check.
    *
-   * @return \GuzzleHttp\Psr7\Response
-   *    Response to purge status request.
+   * @return \GuzzleHttp\Psr7\Response|bool
+   *    Response to purge status request, or FALSE on failure.
    */
   public function getPurgeStatus($purge_id) {
     try {
@@ -483,7 +483,7 @@ class AkamaiClient extends Client {
     if ($e->hasResponse()) {
       $body = $e->getResponse()->getBody();
       $error_detail = Json::decode($body);
-      if (is_null($error_detail) == FALSE && is_array($error_detail)) {
+      if (is_array($error_detail)) {
         foreach ($error_detail as $key => $value) {
           $message .= "$key: $value " . PHP_EOL;
         }
