@@ -7,6 +7,7 @@
 
 namespace Drupal\akamai\Plugin\Purge\Purger;
 
+use Drupal\Component\Utility\UrlHelper;
 use Drupal\purge\Plugin\Purge\Purger\PurgerBase;
 use Drupal\purge\Plugin\Purge\Purger\PurgerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -77,7 +78,9 @@ class AkamaiPurger extends PurgerBase implements PurgerInterface {
    * {@inheritdoc}
    */
   public function getTimeHint() {
-    return (float) $this->akamaiClientConfig->get('timeout');
+    // The max value for getTimeHint is 10.00.
+    $return = $this->akamaiClientConfig->get('timeout') <= 10 ?: 10;
+    return (float) $return;
   }
 
   /**
@@ -91,7 +94,19 @@ class AkamaiPurger extends PurgerBase implements PurgerInterface {
       switch ($invalidation_type) {
         case 'url':
           // URL invalidations should be of type \Drupal\purge\Plugin\Purge\Invalidation\UrlInvalidation.
-          $urls_to_clear[] = $invalidation->getUrl();
+          try {
+            // This SHOULD be an internal path, but in some cases, like
+            // when a database is moved between environments, might not be.
+            $url = $invalidation->getUrl()->getInternalPath();
+          }
+          catch (\UnexpectedValueException $e) {
+            $url = $invalidation->getUrl()->getUri();
+            // Parse out the path.
+            $url = UrlHelper::parse($url);
+            // @todo Investigate whether we need to build path, query, fragment.
+            $url = $url['path'];
+          }
+          $urls_to_clear[] = $url;
           break;
       }
     }
