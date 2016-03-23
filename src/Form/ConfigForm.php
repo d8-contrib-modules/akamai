@@ -136,11 +136,18 @@ class ConfigForm extends ConfigFormBase {
       '#title' => t('Development Options'),
     );
 
+    $form['devel_fieldset']['log_requests'] = array(
+      '#type' => 'checkbox',
+      '#title' => $this->t('Log requests'),
+      '#default_value' => $config->get('log_requests'),
+      '#description' => $this->t('Log all requests and responses.'),
+    );
+
     $form['devel_fieldset']['devel_mode'] = array(
       '#type' => 'checkbox',
       '#title' => $this->t('Use development mode'),
       '#default_value' => $config->get('devel_mode'),
-      '#description' => $this->t('Use the a Mock API instead of a live one.'),
+      '#description' => $this->t('Use a Mock API instead of a live one.'),
     );
 
     $form['devel_fieldset']['mock_endpoint'] = array(
@@ -184,6 +191,7 @@ class ConfigForm extends ConfigFormBase {
       ->set('action', $this->saveAction($values['action']))
       ->set('devel_mode', $values['devel_mode'])
       ->set('mock_endpoint', $values['mock_endpoint'])
+      ->set('log_requests', $values['log_requests'])
       ->save();
 
     $this->checkCredentials();

@@ -54,6 +54,9 @@ akamai.settings:
     mock_endpoint:
       type: string
       label: 'Mock endpoint URL (for devel mode).'
+    log_requests:
+      type: boolean
+      label: 'Log all requests and responses to the Akamai log channel.'
     status_expire:
       type: integer
       label: 'Expire purge status log entries after this many seconds'

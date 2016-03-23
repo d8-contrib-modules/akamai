@@ -7,11 +7,14 @@
 namespace Drupal\akamai;
 
 use Drupal\Component\Utility\UrlHelper;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Akamai\Open\EdgeGrid\Client;
-use Psr\Log\LoggerInterface;
 use GuzzleHttp\Exception\RequestException;
-use Drupal\Component\Serialization\Json;
+use GuzzleHttp\MessageFormatter;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\HandlerStack;
+use Psr\Log\LoggerInterface;
 
 /**
  * Connects to the Akamai EdgeGrid.
@@ -85,8 +88,17 @@ class AkamaiClient extends Client {
 
   /**
    * The domain for which Akamai is managing cache.
+   *
+   * @var string
    */
   protected $baseUrl;
+
+  /**
+   * Whether or not to log all requests and responses.
+   *
+   * @var bool
+   */
+  protected $logRequests = FALSE;
 
   /**
    * AkamaiClient constructor.
@@ -110,12 +122,17 @@ class AkamaiClient extends Client {
       // Set domain (staging or production).
       ->setDomain(key(array_filter($this->drupalConfig->get('domain'))))
       // Set base url for the cache (eg, example.com).
-      ->setBaseUrl($this->drupalConfig->get('basepath'));
+      ->setBaseUrl($this->drupalConfig->get('basepath'))
+      // Sets logging.
+      ->setLogRequests($this->drupalConfig->get('log_requests'));
 
     // Create an authentication object so we can sign requests.
     $auth = AkamaiAuthentication::create($config_factory);
-    // Set the auth credentials up.
-    // @see Authentication::createFromEdgeRcFile()
+
+    if ($this->logRequests) {
+      $this->enableRequestLogging();
+    }
+
     parent::__construct($this->akamaiClientConfig, $auth);
   }
 
@@ -140,6 +157,34 @@ class AkamaiClient extends Client {
     $client_config['timeout'] = $this->drupalConfig->get('timeout');
 
     return $client_config;
+  }
+
+  /**
+   * Enables logging of all requests and responses.
+   *
+   * @return $this
+   */
+  public function enableRequestLogging() {
+    $formatter = new MessageFormatter('<pre>' . MessageFormatter::DEBUG . '</pre>');
+    $request_logger = Middleware::log($this->logger, $formatter);
+    $stack = HandlerStack::create();
+    $stack->push($request_logger);
+    $this->akamaiClientConfig['handler'] = $stack;
+
+    return $this;
+  }
+
+  /**
+   * Sets whether or not to log requests and responses.
+   *
+   * @param bool $log_requests
+   *   TRUE to log all requests, FALSE to not.
+   *
+   * @return $this
+   */
+  public function setLogRequests($log_requests) {
+    $this->logRequests = (bool) $log_requests;
+    return $this;
   }
 
   /**
