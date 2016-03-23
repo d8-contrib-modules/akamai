@@ -62,7 +62,7 @@ class PurgeStatusDeleteForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to delete purge status %purge_id?', ['%purge_id' => $this->getPurgeId()]);
+    return $this->t('Are you sure you want to delete purge status %purge_id?', ['%purge_id' => $this->purgeId]);
   }
 
   /**
@@ -71,7 +71,7 @@ class PurgeStatusDeleteForm extends ConfirmFormBase {
   public function getCancelUrl() {
     // @todo: Implement getCancelUrl() method.
     // Go back to the purge detail page.
-    return new Url('akamai.statuslog_purge_check', ['purge_id' => $this->getPurgeId()]);
+    return new Url('akamai.statuslog_purge_check', ['purge_id' => $this->purgeId]);
   }
 
   /**
@@ -94,7 +94,7 @@ class PurgeStatusDeleteForm extends ConfirmFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->statusStorage->delete($this->purgeId);
-    drupal_set_message($this->t('%purge_id deleted.', ['%purge_id' => $this->purge_id]));
+    drupal_set_message($this->t('%purge_id deleted.', ['%purge_id' => $this->purgeId]));
     // Redirect to the listing page.
     $form_state->setRedirect('akamai.statuslog_list');
   }
