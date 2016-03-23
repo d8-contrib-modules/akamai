@@ -7,7 +7,6 @@
 
 namespace Drupal\akamai\Plugin\Purge\Purger;
 
-use Drupal\Component\Utility\UrlHelper;
 use Drupal\purge\Plugin\Purge\Purger\PurgerBase;
 use Drupal\purge\Plugin\Purge\Purger\PurgerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -87,24 +86,22 @@ class AkamaiPurger extends PurgerBase implements PurgerInterface {
    * {@inheritdoc}
    */
   public function invalidate(array $invalidations) {
+    $urls_to_clear = [];
     foreach ($invalidations as $invalidation) {
       $invalidation->setState(InvalidationInterface::PROCESSING);
       $invalidation_type = $invalidation->getPluginId();
 
       switch ($invalidation_type) {
         case 'url':
-          // URL invalidations should be of type \Drupal\purge\Plugin\Purge\Invalidation\UrlInvalidation.
+          // URL invalidations should be of type
+          // \Drupal\purge\Plugin\Purge\Invalidation\UrlInvalidation.
           try {
             // This SHOULD be an internal path, but in some cases, like
             // when a database is moved between environments, might not be.
             $url = $invalidation->getUrl()->getInternalPath();
           }
           catch (\UnexpectedValueException $e) {
-            $url = $invalidation->getUrl()->getUri();
-            // Parse out the path.
-            $url = UrlHelper::parse($url);
-            // @todo Investigate whether we need to build path, query, fragment.
-            $url = $url['path'];
+            $url = $this->normalizePath($invalidation->getUrl()->getUri());
           }
           $urls_to_clear[] = $url;
           break;
@@ -134,6 +131,22 @@ class AkamaiPurger extends PurgerBase implements PurgerInterface {
    */
   public function hasRuntimeMeasurement() {
     return FALSE;
+  }
+
+  /**
+   * Converts any path or URL into a normalized path.
+   *
+   * @param string $url
+   *   URL to normalize.
+   *
+   * @return string
+   *   Path suitable for passing to AkamaiClient, like my/path?myquery=str.
+   */
+  public function normalizePath($url) {
+    $parsed_url = parse_url($url);
+    $path = isset($parsed_url['path']) ? $parsed_url['path'] : '';
+    $query = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
+    return $path . $query;
   }
 
 }

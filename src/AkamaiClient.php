@@ -47,7 +47,7 @@ class AkamaiClient extends Client {
   /**
    * A logger instance.
    *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
 
