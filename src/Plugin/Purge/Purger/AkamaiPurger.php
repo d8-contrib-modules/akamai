@@ -35,6 +35,13 @@ class AkamaiPurger extends PurgerBase implements PurgerInterface {
    */
   protected $client;
 
+  /**
+   * Akamai client config.
+   *
+   * @var \Drupal\Core\Config;
+   */
+  protected $akamaiClientConfig;
+
 
   /**
    * {@inheritdoc}
@@ -63,14 +70,14 @@ class AkamaiPurger extends PurgerBase implements PurgerInterface {
   public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->client = \Drupal::service('akamai.edgegridclient');
+    $this->akamaiClientConfig = $config->get('akamai.settings');
   }
 
   /**
    * {@inheritdoc}
    */
   public function getTimeHint() {
-    // @todo Create a configurable max timeout.
-    return 4.00;
+    return (float) $this->akamaiClientConfig->get('timeout');
   }
 
   /**
@@ -83,14 +90,35 @@ class AkamaiPurger extends PurgerBase implements PurgerInterface {
 
       switch ($invalidation_type) {
         case 'url':
-          $urls_to_clear[] = $invalidation;
+          // URL invalidations should be of type \Drupal\purge\Plugin\Purge\Invalidation\UrlInvalidation.
+          $urls_to_clear[] = $invalidation->getUrl();
           break;
-
-        // @todo implement other invalidation types
       }
     }
 
-    $this->client->purgeUrls($urls_to_clear);
+    // Purge all URLs in a single request. Akamai accepts up to 50 (?)
+    // invalidations per request.
+    if ($this->client->purgeUrls($urls_to_clear)) {
+      // Now mark all URLs as cleared.
+      foreach ($invalidations as $invalidation) {
+        $invalidation->setState(InvalidationInterface::SUCCEEDED);
+      }
+    }
+  }
+
+  /**
+   * Use a static value for purge queuer performance.
+   *
+   * Akamai's CCUv2 can take several minutes to action a purge request. However,
+   * from Purge's perspective, we should mark objects as purged upstream when
+   * Akamai accepts them for purging.
+   *
+   * @todo investigate whether we can track performance asynchronously.
+   *
+   * @see parent::hasRunTimeMeasurement()
+   */
+  public function hasRuntimeMeasurement() {
+    return FALSE;
   }
 
 }
