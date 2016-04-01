@@ -82,7 +82,7 @@ class AkamaiStatusLogTest extends WebTestBase {
     $this->statusStorage->save($mock_status);
     $this->statusStorage->save($mock_status);
     $saved_status = $this->statusStorage->get($mock_status['purgeId']);
-    $this->assertTrue(count($saved_status) == 3, 'Statuses with same purge id are collated.');
+    $this->assertEquals(count($saved_status), 3, 'Statuses with same purge id are collated.');
 
     // Tests that statuses are deleted on cron.
     // Set statuses to expire immediately.

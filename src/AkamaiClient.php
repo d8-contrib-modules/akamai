@@ -324,7 +324,7 @@ class AkamaiClient extends Client {
    *   A fully qualified URL.
    */
   public function normalizeUrl($url) {
-    if (UrlHelper::isExternal($url, TRUE)) {
+    if (UrlHelper::isExternal($url)) {
       return $url;
     }
     else {

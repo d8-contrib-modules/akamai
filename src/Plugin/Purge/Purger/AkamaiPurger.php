@@ -25,7 +25,7 @@ use \Drupal\purge\Plugin\Purge\Invalidation\InvalidationInterface;
  *   configform = "Drupal\akamai\Form\ConfigForm",
  * )
  */
-class AkamaiPurger extends PurgerBase implements PurgerInterface {
+class AkamaiPurger extends PurgerBase {
 
 
   /**

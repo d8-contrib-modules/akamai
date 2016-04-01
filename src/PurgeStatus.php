@@ -64,7 +64,7 @@ class PurgeStatus {
    * PurgeStatus constructor.
    *
    * @param array $status_requests
-   *   An array of request response arrays.
+   *   A status response as an array, or a list of responses.
    */
   public function __construct($status_requests) {
     $this->statusRequests = $status_requests;

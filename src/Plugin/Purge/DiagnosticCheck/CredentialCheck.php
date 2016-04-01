@@ -23,7 +23,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   dependent_purger_plugins = {"akamai"}
  * )
  */
-class CredentialCheck extends DiagnosticCheckBase implements DiagnosticCheckInterface {
+class CredentialCheck extends DiagnosticCheckBase {
   /**
    * The settings configuration.
    *
