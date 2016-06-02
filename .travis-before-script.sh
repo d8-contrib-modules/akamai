@@ -18,9 +18,6 @@ drupal_ti_ensure_module_linked
 
 # Initialize composer manager.
 TMP_CWD=`pwd`
-#cd "$DRUPAL_TI_DRUPAL_DIR"
-#wget https://www.drupal.org/files/issues/2664274-52.patch
-#git apply -v 2664274-52.patch
 cd "$TMP_CWD"
 php "$DRUPAL_TI_DRUPAL_DIR/$DRUPAL_TI_MODULES_PATH/composer_manager/scripts/init.php"
 composer drupal-rebuild
