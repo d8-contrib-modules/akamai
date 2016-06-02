@@ -7,7 +7,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use \Drupal\purge\Plugin\Purge\Invalidation\InvalidationInterface;
 
-
 /**
  * Akamai Purger.
  *
@@ -35,7 +34,6 @@ class AkamaiPurger extends PurgerBase {
    * @var \Drupal\Core\Config;
    */
   protected $akamaiClientConfig;
-
 
   /**
    * {@inheritdoc}

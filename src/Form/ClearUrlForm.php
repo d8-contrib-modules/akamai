@@ -4,6 +4,7 @@ namespace Drupal\akamai\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+
 /**
  * Builds a form to clear urls.
  */

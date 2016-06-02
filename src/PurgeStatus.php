@@ -113,7 +113,6 @@ class PurgeStatus {
     return $this->lastCheckedTime;
   }
 
-
   /**
    * Gets a list of all URLs that are in this purge request.
    *

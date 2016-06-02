@@ -10,7 +10,6 @@ use Drupal\akamai\StatusStorage;
 use Drupal\Core\Url;
 use Drupal\Component\Serialization\Json;
 
-
 /**
  * Provides route callback utilities to browse and administer Akamai purges.
  */

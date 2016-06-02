@@ -8,7 +8,6 @@ use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\akamai\StatusStorage;
 
-
 /**
  * Provides a form for deleting a purge status item.
  */
