@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\akamai\PurgeStatus.
- */
 
 namespace Drupal\akamai;
 

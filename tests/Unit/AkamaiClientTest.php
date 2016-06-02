@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\Tests\akamai\Unit\AkamaiClientTest.
- */
-
 namespace Drupal\Tests\akamai\Unit;
 
 use Drupal\akamai\AkamaiClient;

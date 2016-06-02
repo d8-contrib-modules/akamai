@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal/akamai/Form/ClearUrlForm.
- */
-
 namespace Drupal\akamai\Form;
 
 use Drupal\Core\Form\FormBase;

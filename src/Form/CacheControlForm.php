@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\akamai\Form\CacheControlForm.
- */
-
 namespace Drupal\akamai\Form;
 
 use Drupal\akamai\AkamaiClient;

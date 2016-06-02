@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains tests for Akamai Purge Status logging.
- */
-
 namespace Drupal\akamai\Tests;
 
 use Drupal\simpletest\WebTestBase;

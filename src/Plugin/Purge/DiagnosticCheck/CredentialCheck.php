@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\akamai\Plugin\Purge\DiagnosticCheck.
- */
-
 namespace Drupal\akamai\Plugin\Purge\DiagnosticCheck;
 
 use Drupal\Core\Config\ConfigFactoryInterface;

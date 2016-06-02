@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Simpletest test for Akamai cache control form clearing tests.
- */
-
 namespace Drupal\akamai\Tests;
 
 use Drupal\simpletest\WebTestBase;

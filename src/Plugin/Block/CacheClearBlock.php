@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\akamai\Plugin\Block\CacheClearBlock.
- */
-
 namespace Drupal\akamai\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;

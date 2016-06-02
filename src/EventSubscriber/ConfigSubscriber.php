@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\akamai\EventSubscriber\ConfigSubscriber.
- */
-
 namespace Drupal\akamai\EventSubscriber;
 
 use Drupal\Core\Config\ConfigCrudEvent;

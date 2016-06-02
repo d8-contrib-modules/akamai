@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\akamai\Plugin\Purge\Purger\AkamaiPurger.
- */
-
 namespace Drupal\akamai\Plugin\Purge\Purger;
 
 use Drupal\purge\Plugin\Purge\Purger\PurgerBase;

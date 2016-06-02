@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\akamai\AkamaiClient.
- */
 
 namespace Drupal\akamai;
 

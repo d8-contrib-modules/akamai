@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains Drupal\akamai\Plugin\Purge\QueueLengthCheck.
- */
 
 namespace Drupal\akamai\Plugin\Purge\DiagnosticCheck;
 

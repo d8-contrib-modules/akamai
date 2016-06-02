@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains Drupal\akamai\Controller\StatusLogController.
- */
 
 namespace Drupal\akamai\Controller;
 

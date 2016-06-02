@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\akamai\Form\PurgeStatusDeleteForm.
- */
 
 namespace Drupal\akamai\Form;
 

@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains Drupal\akamai\Form\ConfigForm.
- */
 
 namespace Drupal\akamai\Form;
 
