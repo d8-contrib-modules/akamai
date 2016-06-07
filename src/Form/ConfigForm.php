@@ -2,14 +2,40 @@
 
 namespace Drupal\akamai\Form;
 
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * A configuration form to interact with Akamai API settings.
  */
 class ConfigForm extends ConfigFormBase {
+
+  /**
+   * Constructs a new ConfigForm.
+   *
+   * @param ConfigFactory $configFactory
+   *   The ConfigFactory service.
+   * @param RequestStack $request_stack
+   *   The request_stack service.
+   */
+  public function __construct(ConfigFactory $configFactory, RequestStack $request_stack) {
+    $this->requestStack = $request_stack;
+    parent::__construct($configFactory);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('request_stack')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -28,13 +54,22 @@ class ConfigForm extends ConfigFormBase {
   }
 
   /**
+   * Shows a warning via drupal_set_message().
+   */
+  public function httpsWarning() {
+    drupal_set_message($this->t('If you submit this form via HTTP, your API credentials will be sent in clear text and may be intercepted. For information on setting up HTTPs, see <a href="https://www.drupal.org/https-information">Enabling HTTPs</a>.'), 'warning');
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('akamai.settings');
-
-    // @todo decide whether we want a global killswitch here.
     $form = array();
+    if ($this->isHttps() === FALSE) {
+      $this->httpsWarning();
+    }
+
+    $config = $this->config('akamai.settings');
 
     // Link to instructions on how to get Akamai credentials from Luna.
     $luna_url = 'https://developer.akamai.com/introduction/Prov_Creds.html';
@@ -256,6 +291,17 @@ class ConfigForm extends ConfigFormBase {
 
     $action[$value] = TRUE;
     return $action;
+  }
+
+  /**
+   * Checks that the form is being accessed over HTTPs.
+   *
+   * @return bool
+   *   TRUE if page was requested via HTTPs, FALSE if not.
+   */
+  protected function isHttps() {
+    $request = $this->requestStack->getCurrentRequest();
+    return $request->getScheme() === 'https';
   }
 
 }
